@@ -22,9 +22,9 @@ public class GetFollowersCountTask extends BackgroundTask {
     /**
      * Auth token for logged-in user.
      */
-    private AuthToken authToken;
+    private final AuthToken authToken;
 
-    private String targetUserAlias;
+    private final String targetUserAlias;
 
     public GetFollowersCountTask(AuthToken authToken, String targetUserAlias, Handler messageHandler) {
         super(messageHandler);
