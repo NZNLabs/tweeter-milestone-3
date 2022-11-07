@@ -52,15 +52,6 @@ public class GetFollowersTask extends BackgroundTask {
         this.lastFollower = lastFollower;
     }
 
-    private FakeData getFakeData() {
-        return FakeData.getInstance();
-    }
-
-    private Pair<List<User>, Boolean> getFollowers() {
-        Pair<List<User>, Boolean> pageOfUsers = getFakeData().getPageOfUsers(lastFollower, limit, targetUser);
-        return pageOfUsers;
-    }
-
     @Override
     protected void runTask() {
         try {

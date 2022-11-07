@@ -20,6 +20,8 @@ public class FollowService {
 
     public static final String URL_PATH_GET_FOLLOWING = "/getFollowing";
     public static final String URL_PATH_GET_FOLLOWERS = "/getFollowers";
+    public static final String URL_PATH_GET_FOLLOWING_COUNT = "/getFollowingCount";
+    public static final String URL_PATH_GET_FOLLOWER_COUNT = "/getFollowerCount";
 
     /**
      * Creates an instance.
@@ -68,13 +70,13 @@ public class FollowService {
 
     // FOLLOWING COUNT
     public void getFollowingCountObserver(AuthToken authToken, User targetUser, TaskObserverInterface observer) {
-        GetFollowingCountTask task = new GetFollowingCountTask(authToken, targetUser, new GenericMessageHandler<>(observer));
+        GetFollowingCountTask task = new GetFollowingCountTask(authToken, targetUser.getAlias(), new GenericMessageHandler<>(observer));
         BackgroundTaskUtils.runTask(task);
     }
 
     // FOLLOWER COUNT
     public void getFollowerCountObserver(AuthToken authToken, User targetUser, TaskObserverInterface observer) {
-        GetFollowersCountTask task = new GetFollowersCountTask(authToken, targetUser, new GenericMessageHandler<>(observer));
+        GetFollowersCountTask task = new GetFollowersCountTask(authToken, targetUser.getAlias(), new GenericMessageHandler<>(observer));
         BackgroundTaskUtils.runTask(task);
     }
 
