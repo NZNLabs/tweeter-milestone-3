@@ -1,11 +1,14 @@
 package edu.byu.cs.tweeter.server.service;
 
+import edu.byu.cs.tweeter.model.net.request.FollowRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
 import edu.byu.cs.tweeter.model.net.request.CountRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
+import edu.byu.cs.tweeter.model.net.request.UnfollowRequest;
 import edu.byu.cs.tweeter.model.net.response.CountResponse;
 import edu.byu.cs.tweeter.model.net.response.FollowersResponse;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
+import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.server.dao.FollowDAO;
 import edu.byu.cs.tweeter.server.dao.FollowerDAO;
 
@@ -49,6 +52,18 @@ public class FollowService {
         return getFollowingDAO().getFollowingCount(request.getUserAlias());
     }
 
+    public Response getFollow(FollowRequest request) {
+        if(request.getUserAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include user alias");}
+        if(request.getTargetUserAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include target user alias");}
+        return getFollowingDAO().getFollow(request);
+    }
+
+    public Response getUnfollow(UnfollowRequest request) {
+        if(request.getUserAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include user alias");}
+        if(request.getTargetUserAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include target user alias");}
+        return getFollowingDAO().getUnfollow(request);
+    }
+
     // FOLLOWERS
 
     public FollowersResponse getFollowers(FollowersRequest request) {
@@ -68,5 +83,8 @@ public class FollowService {
         if(request.getUserAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include user alias");}
         return getFollowersDAO().getFollowerCount(request.getUserAlias());
     }
+
+
+
 
 }

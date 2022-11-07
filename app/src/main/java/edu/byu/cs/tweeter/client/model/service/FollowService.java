@@ -22,8 +22,8 @@ public class FollowService {
     public static final String URL_PATH_GET_FOLLOWERS = "/getFollowers";
     public static final String URL_PATH_GET_FOLLOWING_COUNT = "/getFollowingCount";
     public static final String URL_PATH_GET_FOLLOWER_COUNT = "/getFollowerCount";
-    public static final String URL_PATH_POST_FOLLOW = "/postFollow";
-    public static final String URL_PATH_POST_UNFOLLOW = "/postUnfollow";
+    public static final String URL_PATH_GET_FOLLOW = "/getFollow";
+    public static final String URL_PATH_GET_UNFOLLOW = "/getUnfollow";
     public static final String URL_PATH_GET_IS_FOLLOW = "/getIsFollow";
 
     /**
