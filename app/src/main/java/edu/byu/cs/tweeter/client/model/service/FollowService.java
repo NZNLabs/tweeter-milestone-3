@@ -19,7 +19,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class FollowService {
 
     public static final String URL_PATH_GET_FOLLOWING = "/getFollowing";
-    public static final String URL_PATH_GET_FOLLOWERS = "/getFollowings";
+    public static final String URL_PATH_GET_FOLLOWERS = "/getFollowers";
 
     /**
      * Creates an instance.
@@ -38,8 +38,8 @@ public class FollowService {
     }
 
     // FOLLOWERS
-    public void getFollowers(AuthToken authToken, User targetUser, int limit, User lastFollowee, TaskObserverInterface observer) {
-        GetFollowersTask followersTask = getGetFollowersTask(authToken, targetUser, limit, lastFollowee, observer);
+    public void getFollowers(AuthToken authToken, User targetUser, int limit, User lastFollower, TaskObserverInterface observer) {
+        GetFollowersTask followersTask = getGetFollowersTask(authToken, targetUser, limit, lastFollower, observer);
         BackgroundTaskUtils.runTask(followersTask);
     }
 

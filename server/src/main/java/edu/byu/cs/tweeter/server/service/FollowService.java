@@ -1,8 +1,11 @@
 package edu.byu.cs.tweeter.server.service;
 
+import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
+import edu.byu.cs.tweeter.model.net.response.FollowersResponse;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
 import edu.byu.cs.tweeter.server.dao.FollowDAO;
+import edu.byu.cs.tweeter.server.dao.FollowerDAO;
 
 /**
  * Contains the business logic for getting the users a user is following.
@@ -36,5 +39,22 @@ public class FollowService {
      */
     FollowDAO getFollowingDAO() {
         return new FollowDAO();
+    }
+
+
+
+    // FOLLOWERS
+
+    public FollowersResponse getFollowers(FollowersRequest request) {
+        if(request.getFollowerAlias() == null) {
+            throw new RuntimeException("[Bad Request] Request needs to have a follower alias");
+        } else if(request.getLimit() <= 0) {
+            throw new RuntimeException("[Bad Request] Request needs to have a positive limit");
+        }
+        return getFollowersDAO().getFollowers(request);
+    }
+
+    FollowerDAO getFollowersDAO() {
+        return new FollowerDAO();
     }
 }
