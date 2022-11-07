@@ -22,6 +22,9 @@ public class FollowService {
     public static final String URL_PATH_GET_FOLLOWERS = "/getFollowers";
     public static final String URL_PATH_GET_FOLLOWING_COUNT = "/getFollowingCount";
     public static final String URL_PATH_GET_FOLLOWER_COUNT = "/getFollowerCount";
+    public static final String URL_PATH_POST_FOLLOW = "/postFollow";
+    public static final String URL_PATH_POST_UNFOLLOW = "/postUnfollow";
+    public static final String URL_PATH_GET_IS_FOLLOW = "/getIsFollow";
 
     /**
      * Creates an instance.
@@ -31,23 +34,14 @@ public class FollowService {
 
     // FOLLOWING
     public void getFollowing(AuthToken authToken, User targetUser, int limit, User lastFollowee, TaskObserverInterface observer) {
-        GetFollowingTask followingTask = getGetFollowingTask(authToken, targetUser, limit, lastFollowee, observer);
+        GetFollowingTask followingTask = new GetFollowingTask(authToken, targetUser, limit, lastFollowee, new GenericMessageHandler<>(observer));
         BackgroundTaskUtils.runTask(followingTask);
-    }
-    // This method is public so it can be accessed by test cases
-    public GetFollowingTask getGetFollowingTask(AuthToken authToken, User targetUser, int limit, User lastFollowee, TaskObserverInterface observer) {
-        return new GetFollowingTask(authToken, targetUser, limit, lastFollowee, new GenericMessageHandler<>(observer));
     }
 
     // FOLLOWERS
     public void getFollowers(AuthToken authToken, User targetUser, int limit, User lastFollower, TaskObserverInterface observer) {
-        GetFollowersTask followersTask = getGetFollowersTask(authToken, targetUser, limit, lastFollower, observer);
+        GetFollowersTask followersTask = new GetFollowersTask(authToken, targetUser, limit, lastFollower, new GenericMessageHandler<>(observer));
         BackgroundTaskUtils.runTask(followersTask);
-    }
-
-    // This method is public so it can be accessed by test cases
-    public GetFollowersTask getGetFollowersTask(AuthToken authToken, User targetUser, int limit, User lastFollower, TaskObserverInterface observer) {
-        return new GetFollowersTask(authToken, targetUser, limit, lastFollower, new GenericMessageHandler<>(observer));
     }
 
     // IS FOLLOW

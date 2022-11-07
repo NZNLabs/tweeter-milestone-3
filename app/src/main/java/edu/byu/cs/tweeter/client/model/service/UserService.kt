@@ -13,6 +13,9 @@ class UserService {
 
     companion object {
         const val URL_PATH_LOGIN = "/login"
+        const val URL_PATH_LOGOUT = "/logout"
+        const val URL_PATH_REGISTER = "/register"
+        const val URL_PATH_GET_USER = "/getUser"
     }
 
     fun login(username: String, password: String, observer: TaskObserverInterface) {

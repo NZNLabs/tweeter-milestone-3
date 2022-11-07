@@ -2,40 +2,50 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.List;
+
+import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.util.FakeData;
-import edu.byu.cs.tweeter.util.Pair;
-
-import java.io.Serializable;
-import java.util.List;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.StatusRequest;
+import edu.byu.cs.tweeter.model.net.response.StatusResponse;
 
 /**
  * Background task that retrieves a page of statuses from a user's story.
  */
 public class GetStoryTask extends BackgroundTask {
+
     public static final String MORE_PAGES_KEY = "more-pages";
+    private static final String LOG_TAG = "GetStoryTask";
+
 
     /**
      * Auth token for logged-in user.
      */
-    private AuthToken authToken;
+    private final AuthToken authToken;
     /**
      * The user whose story is being retrieved.
      * (This can be any user, not just the currently logged-in user.)
      */
-    private User targetUser;
+    private final User targetUser;
     /**
      * Maximum number of statuses to return (i.e., page size).
      */
-    private int limit;
+    private final int limit;
     /**
      * The last status returned in the previous page of results (can be null).
      * This allows the new page to begin where the previous page ended.
      */
-    private Status lastStatus;
+    private final Status lastStatus;
+    /**
+     * Message handler that will receive task results.
+     */
 
     public GetStoryTask(AuthToken authToken, User targetUser, int limit, Status lastStatus, Handler messageHandler) {
         super(messageHandler);
@@ -45,27 +55,32 @@ public class GetStoryTask extends BackgroundTask {
         this.lastStatus = lastStatus;
     }
 
-    private FakeData getFakeData() {
-        return FakeData.getInstance();
-    }
-
-    private Pair<List<Status>, Boolean> getStory() {
-        Pair<List<Status>, Boolean> pageOfStatus = getFakeData().getPageOfStatus(lastStatus, limit);
-        return pageOfStatus;
-    }
 
     @Override
     protected void runTask() {
-        Pair<List<Status>, Boolean> pageOfStatus = getStory();
 
-        List<Status> statuses = pageOfStatus.getFirst();
-        boolean hasMorePages = pageOfStatus.getSecond();
+        try {
+            String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
 
-        Bundle msgBundle = new Bundle();
-        msgBundle.putBoolean(SUCCESS_KEY, true);
-        msgBundle.putSerializable(PAGED_ITEM_KEY, (Serializable) statuses);
-        msgBundle.putBoolean(MORE_PAGES_KEY, hasMorePages);
+            StatusRequest request = new StatusRequest(authToken, targetUserAlias, limit, lastStatus);
+            StatusResponse response = getServerFacade().getStory(request, StatusService.URL_PATH_GET_STORY);
 
-        sendSuccessMessage(msgBundle);
+            if (response.isSuccess()) {
+                List<Status> statuses = response.getStatuses();
+                boolean hasMorePages = response.getHasMorePages();
+
+                Bundle extraBundle = new Bundle();
+                extraBundle.putSerializable(PAGED_ITEM_KEY, (Serializable) statuses);
+                extraBundle.putBoolean(MORE_PAGES_KEY, hasMorePages);
+                sendSuccessMessage(extraBundle);
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to get story", ex);
+            sendExceptionMessage(ex);
+        }
+
     }
 }

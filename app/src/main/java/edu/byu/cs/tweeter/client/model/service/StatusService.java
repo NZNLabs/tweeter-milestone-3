@@ -15,6 +15,10 @@ import edu.byu.cs.tweeter.model.domain.User;
  */
 public class StatusService {
 
+    public static final String URL_PATH_GET_FEED = "/getFeed";
+    public static final String URL_PATH_GET_STORY = "/getStory";
+    public static final String URL_PATH_POST_STATUS = "/postStatus";
+
     public StatusService() {}
 
     // FEED
