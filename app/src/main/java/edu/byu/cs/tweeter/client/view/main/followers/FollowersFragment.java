@@ -1,9 +1,10 @@
-package edu.byu.cs.tweeter.client.view.main.following;
+package edu.byu.cs.tweeter.client.view.main.followers;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,37 +26,36 @@ import java.util.List;
 
 import edu.byu.cs.tweeter.R;
 import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.client.presenter.FollowingPresenter;
+import edu.byu.cs.tweeter.client.presenter.FollowersPresenter;
 import edu.byu.cs.tweeter.client.presenter.PagedPresenter;
-import edu.byu.cs.tweeter.client.view.BaseFragment;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-
 /**
- * The fragment that displays on the 'Following' tab.
+ * Implements the "Followers" tab.
  */
-public class FollowingFragment extends BaseFragment implements PagedPresenter.PagedView<User> {
+public class FollowersFragment extends Fragment implements PagedPresenter.PagedView<User> {
 
+    private static final String LOG_TAG = "FollowersFragment";
     private static final String USER_KEY = "UserKey";
 
     private static final int LOADING_DATA_VIEW = 0;
     private static final int ITEM_VIEW = 1;
 
-    private FollowingPresenter presenter;
+    private FollowersPresenter presenter;
 
-    private FollowingRecyclerViewAdapter followingRecyclerViewAdapter;
+    private FollowersRecyclerViewAdapter followersRecyclerViewAdapter;
 
     /**
-     * Creates an instance of the fragment and places the user and auth token in an arguments
+     * Creates an instance of the fragment and places the target user in an arguments
      * bundle assigned to the fragment.
      *
-     * @param user the logged in user.
+     * @param user the user whose followers are being displayed (not necessarily the logged-in user).
      * @return the fragment.
      */
-    public static FollowingFragment newInstance(User user) {
-        FollowingFragment fragment = new FollowingFragment();
+    public static FollowersFragment newInstance(User user) {
+        FollowersFragment fragment = new FollowersFragment();
 
         Bundle args = new Bundle(1);
         args.putSerializable(USER_KEY, user);
@@ -63,24 +64,45 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
         return fragment;
     }
 
-    /**
-     * Called to notify the view when data loading starts and ends.
-     *
-     * @param value true if we are loading, false otherwise.
-     */
     @Override
-    public void setLoading(boolean value) {
-        followingRecyclerViewAdapter.setLoading(value);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_followers, container, false);
+
+        //noinspection ConstantConditions
+        User user = (User) getArguments().getSerializable(USER_KEY);
+
+        AuthToken authToken = Cache.getInstance().getCurrUserAuthToken();
+
+        presenter = new FollowersPresenter(this, user, authToken);
+
+        RecyclerView followersRecyclerView = view.findViewById(R.id.followersRecyclerView);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this.getContext());
+        followersRecyclerView.setLayoutManager(layoutManager);
+
+        followersRecyclerViewAdapter = new FollowersRecyclerViewAdapter();
+        followersRecyclerView.setAdapter(followersRecyclerViewAdapter);
+
+        followersRecyclerView.addOnScrollListener(new FollowRecyclerViewPaginationScrollListener(layoutManager));
+
+        presenter.loadMoreItems();
+
+        return view;
     }
 
-    /**
-     * Called to pass "following" users to the view when they are loaded.
-     *
-     * @param newUsers list of new "following" users.
-     */
+    @Override
+    public void setLoading(boolean value) {
+        followersRecyclerViewAdapter.setLoading(value);
+    }
+
     @Override
     public void addItems(List<User> newUsers) {
-        followingRecyclerViewAdapter.addItems(newUsers);
+        followersRecyclerViewAdapter.addItems(newUsers);
+    }
+
+    @Override
+    public void displayErrorMessage(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -91,45 +113,9 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
     }
 
     /**
-     * Directs the view to display the specified error message to the user.
-     *
-     * @param message error message to be displayed.
+     * The ViewHolder for the RecyclerView that displays the follower data.
      */
-    @Override
-    public void displayErrorMessage(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_following, container, false);
-
-        User user = (User) getArguments().getSerializable(USER_KEY);
-
-        AuthToken authToken = Cache.getInstance().getCurrUserAuthToken();
-
-        presenter = new FollowingPresenter(this, user, authToken);
-
-        RecyclerView followingRecyclerView = view.findViewById(R.id.followingRecyclerView);
-
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this.getContext());
-        followingRecyclerView.setLayoutManager(layoutManager);
-
-        followingRecyclerViewAdapter = new FollowingRecyclerViewAdapter();
-        followingRecyclerView.setAdapter(followingRecyclerViewAdapter);
-
-        followingRecyclerView.addOnScrollListener(new FollowRecyclerViewPaginationScrollListener(layoutManager));
-
-        presenter.loadMoreItems();
-
-        return view;
-    }
-
-    /**
-     * The ViewHolder for the RecyclerView that displays the Following data.
-     */
-    private class FollowingHolder extends RecyclerView.ViewHolder {
+    private class FollowersHolder extends RecyclerView.ViewHolder {
 
         private final ImageView userImage;
         private final TextView userAlias;
@@ -140,26 +126,20 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
          *
          * @param itemView the view on which the user will be displayed.
          */
-        FollowingHolder(@NonNull View itemView, int viewType) {
+        FollowersHolder(@NonNull View itemView) {
             super(itemView);
 
-            if(viewType == ITEM_VIEW) {
-                userImage = itemView.findViewById(R.id.userImage);
-                userAlias = itemView.findViewById(R.id.userAlias);
-                userName = itemView.findViewById(R.id.userName);
+            userImage = itemView.findViewById(R.id.userImage);
+            userAlias = itemView.findViewById(R.id.userAlias);
+            userName = itemView.findViewById(R.id.userName);
 
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        presenter.getUser(userAlias.getText().toString());
-                        Toast.makeText(getContext(), "You selected '" + userName.getText() + "'.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } else {
-                userImage = null;
-                userAlias = null;
-                userName = null;
-            }
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    presenter.getUser(userAlias.getText().toString());
+                    Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
+                }
+            });
         }
 
         /**
@@ -168,26 +148,24 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
          * @param user the user.
          */
         void bindUser(User user) {
-            Picasso.get().load(user.getImageUrl()).into(userImage);
+            if (user == null) { Log.e(LOG_TAG, "user is null!"); }
+            assert user != null;
             userAlias.setText(user.getAlias());
             userName.setText(user.getName());
+            Picasso.get().load(user.getImageUrl()).into(userImage);
+
         }
     }
 
     /**
-     * The adapter for the RecyclerView that displays the Following data.
+     * The adapter for the RecyclerView that displays the follower data.
      */
-    private class FollowingRecyclerViewAdapter extends RecyclerView.Adapter<FollowingHolder> {
+    private class FollowersRecyclerViewAdapter extends RecyclerView.Adapter<FollowersHolder> {
 
         private final List<User> users = new ArrayList<>();
 
         private boolean isLoading = false;
 
-        /**
-         * Called to notify the adapter when data loading starts and ends.
-         *
-         * @param value true if we are loading, false otherwise.
-         */
         void setLoading(boolean value) {
             isLoading = value;
             if (value) {
@@ -234,47 +212,48 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
         }
 
         /**
-         *  Creates a view holder for a followee to be displayed in the RecyclerView or for a message
-         *  indicating that new rows are being loaded if we are waiting for rows to load.
+         * Creates a view holder for a follower to be displayed in the RecyclerView or for a message
+         * indicating that new rows are being loaded if we are waiting for rows to load.
          *
-         * @param parent the parent view.
+         * @param parent   the parent view.
          * @param viewType the type of the view (ignored in the current implementation).
          * @return the view holder.
          */
         @NonNull
         @Override
-        public FollowingHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            LayoutInflater layoutInflater = LayoutInflater.from(FollowingFragment.this.getContext());
+        public FollowersHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            LayoutInflater layoutInflater = LayoutInflater.from(FollowersFragment.this.getContext());
             View view;
 
-            if(viewType == LOADING_DATA_VIEW) {
-                view =layoutInflater.inflate(R.layout.loading_row, parent, false);
+            if (viewType == LOADING_DATA_VIEW) {
+                view = layoutInflater.inflate(R.layout.loading_row, parent, false);
 
             } else {
                 view = layoutInflater.inflate(R.layout.user_row, parent, false);
             }
 
-            return new FollowingHolder(view, viewType);
+            return new FollowersHolder(view);
         }
 
         /**
-         * Binds the followee at the specified position unless we are currently loading new data. If
+         * Binds the follower at the specified position unless we are currently loading new data. If
          * we are loading new data, the display at that position will be the data loading footer.
          *
-         * @param followingHolder the ViewHolder to which the followee should be bound.
-         * @param position the position (in the list of followees) that contains the followee to be
-         *                 bound.
+         * @param followingHolder the ViewHolder to which the follower should be bound.
+         * @param position        the position (in the list of followers) that contains the follower to be
+         *                        bound.
          */
         @Override
-        public void onBindViewHolder(@NonNull FollowingHolder followingHolder, int position) {
-            if(!isLoading) {
+        public void onBindViewHolder(@NonNull FollowersHolder followingHolder, int position) {
+            if (!isLoading) {
                 followingHolder.bindUser(users.get(position));
             }
         }
 
         /**
-         * Returns the current number of followees available for display.
-         * @return the number of followees available for display.
+         * Returns the current number of followers available for display.
+         *
+         * @return the number of followers available for display.
          */
         @Override
         public int getItemCount() {
@@ -333,8 +312,8 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
          * indicated that there was more data to load.
          *
          * @param recyclerView the RecyclerView.
-         * @param dx the amount of horizontal scroll.
-         * @param dy the amount of vertical scroll.
+         * @param dx           the amount of horizontal scroll.
+         * @param dy           the amount of vertical scroll.
          */
         @Override
         public void onScrolled(@NotNull RecyclerView recyclerView, int dx, int dy) {
@@ -344,19 +323,17 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
             int totalItemCount = layoutManager.getItemCount();
             int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
 
-            if (!presenter.isLoading() && presenter.hasMorePages()) {
+            if (!followersRecyclerViewAdapter.isLoading && presenter.hasMorePages()) {
                 if ((visibleItemCount + firstVisibleItemPosition) >=
                         totalItemCount && firstVisibleItemPosition >= 0) {
                     // Run this code later on the UI thread
                     final Handler handler = new Handler(Looper.getMainLooper());
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            presenter.loadMoreItems();
-                        }
+                    handler.postDelayed(() -> {
+                        presenter.loadMoreItems();
                     }, 500);
                 }
             }
         }
     }
+
 }
