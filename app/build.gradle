@@ -2,13 +2,14 @@ plugins {
     id 'com.android.application'
     id 'de.mannodermaus.android-junit5'
 }
+apply plugin: 'kotlin-android'
 
 android {
-    compileSdk 30
+    compileSdk 33
     defaultConfig {
         applicationId "edu.byu.cs.tweeter"
         minSdkVersion 30
-        targetSdkVersion 30
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -72,4 +73,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.4.0'
 
     androidTestImplementation group: 'org.mockito', name: 'mockito-android', version: '4.4.0'
+    implementation "androidx.core:core-ktx:+"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
-import edu.byu.cs.tweeter.client.model.net.ServerFacade;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -40,11 +39,8 @@ public class LoginTask extends BackgroundTask {
      */
     protected AuthToken authToken;
 
-    private ServerFacade serverFacade;
-
-    public LoginTask(UserService userService, String username, String password, Handler messageHandler) {
+    public LoginTask(String username, String password, Handler messageHandler) {
         super(messageHandler);
-
         this.username = username;
         this.password = password;
     }
@@ -53,12 +49,13 @@ public class LoginTask extends BackgroundTask {
     protected void runTask() {
         try {
             LoginRequest request = new LoginRequest(username, password);
-            LoginResponse response = getServerFacade().login(request, UserService.URL_PATH);
+            LoginResponse response = getServerFacade().login(request, UserService.URL_PATH_LOGIN);
 
             if (response.isSuccess()) {
-                this.user = response.getUser();
-                this.authToken = response.getAuthToken();
-                sendSuccessMessage();
+                Bundle msgBundle = new Bundle();
+                msgBundle.putSerializable(USER_KEY, response.getUser());
+                msgBundle.putSerializable(AUTH_TOKEN_KEY, response.getAuthToken());
+                sendSuccessMessage(msgBundle);
             } else {
                 sendFailedMessage(response.getMessage());
             }
@@ -68,23 +65,4 @@ public class LoginTask extends BackgroundTask {
         }
     }
 
-    protected void loadSuccessBundle(Bundle msgBundle) {
-        msgBundle.putSerializable(USER_KEY, this.user);
-        msgBundle.putSerializable(AUTH_TOKEN_KEY, this.authToken);
-    }
-
-    /**
-     * Returns an instance of {@link ServerFacade}. Allows mocking of the ServerFacade class for
-     * testing purposes. All usages of ServerFacade should get their instance from this method to
-     * allow for proper mocking.
-     *
-     * @return the instance.
-     */
-    ServerFacade getServerFacade() {
-        if(serverFacade == null) {
-            serverFacade = new ServerFacade();
-        }
-
-        return serverFacade;
-    }
 }
