@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.Status;
+import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.request.StatusRequest;
+import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.StatusResponse;
 import edu.byu.cs.tweeter.util.FakeData;
 
@@ -12,6 +14,11 @@ import edu.byu.cs.tweeter.util.FakeData;
  * A DAO for accessing 'story' data from the database.
  */
 public class StoryDAO {
+
+    public Response postStatus(PostStatusRequest request) {
+        assert request.getStatus() != null;
+        return new Response(true);
+    }
 
     public StatusResponse getStory(StatusRequest request) {
         // TODO: Generates dummy data. Replace with a real implementation.
