@@ -24,7 +24,7 @@ public class FollowService {
     public static final String URL_PATH_GET_FOLLOWER_COUNT = "/getFollowerCount";
     public static final String URL_PATH_GET_FOLLOW = "/getFollow";
     public static final String URL_PATH_GET_UNFOLLOW = "/getUnfollow";
-    public static final String URL_PATH_GET_IS_FOLLOW = "/getIsFollow";
+    public static final String URL_PATH_GET_IS_FOLLOW = "/getIsFollower";
 
     /**
      * Creates an instance.
