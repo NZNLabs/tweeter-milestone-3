@@ -4,6 +4,7 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.response.LoginResponse;
+import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.util.FakeData;
 
 public class UserService {
@@ -49,5 +50,12 @@ public class UserService {
      */
     FakeData getFakeData() {
         return FakeData.getInstance();
+    }
+
+    public Response logout(AuthToken request) {
+        if(request == null){
+            throw new RuntimeException("[Bad Request] Missing auth token");
+        }
+        return new Response(true);
     }
 }
