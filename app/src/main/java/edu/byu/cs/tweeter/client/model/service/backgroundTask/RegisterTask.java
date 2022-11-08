@@ -2,9 +2,13 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 
+import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
+import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 import edu.byu.cs.tweeter.util.FakeData;
 import edu.byu.cs.tweeter.util.Pair;
 
@@ -15,27 +19,28 @@ public class RegisterTask extends BackgroundTask {
 
     public static final String USER_KEY = "user";
     public static final String AUTH_TOKEN_KEY = "auth-token";
+    private static final String LOG_TAG = "LoginTask";
 
     /**
      * The user's first name.
      */
-    private String firstName;
+    private final String firstName;
     /**
      * The user's last name.
      */
-    private String lastName;
+    private final String lastName;
     /**
      * The user's username (or "alias" or "handle"). E.g., "@susan".
      */
-    private String username;
+    private final String username;
     /**
      * The user's password.
      */
-    private String password;
+    private final String password;
     /**
      * The base-64 encoded bytes of the user's profile image.
      */
-    private String image;
+    private final String image;
 
     public RegisterTask(String firstName, String lastName, String username, String password, String image, Handler messageHandler) {
         super(messageHandler);
@@ -58,14 +63,23 @@ public class RegisterTask extends BackgroundTask {
 
     @Override
     protected void runTask() {
-        Pair<User, AuthToken> registerResult = doRegister();
 
-        User registeredUser = registerResult.getFirst();
-        AuthToken authToken = registerResult.getSecond();
+        try {
+            RegisterRequest request = new RegisterRequest(username, password, firstName, lastName, image);
+            LoginResponse response = getServerFacade().register(request, UserService.URL_PATH_REGISTER);
 
-        Bundle msgBundle = new Bundle();
-        msgBundle.putSerializable(USER_KEY, registeredUser);
-        msgBundle.putSerializable(AUTH_TOKEN_KEY, authToken);
-        sendSuccessMessage(msgBundle);
+            if (response.isSuccess()) {
+                Bundle msgBundle = new Bundle();
+                msgBundle.putSerializable(USER_KEY, response.getUser());
+                msgBundle.putSerializable(AUTH_TOKEN_KEY, response.getAuthToken());
+                sendSuccessMessage(msgBundle);
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (Exception ex) {
+            Log.e(LOG_TAG, ex.getMessage(), ex);
+            sendExceptionMessage(ex);
+        }
+
     }
 }

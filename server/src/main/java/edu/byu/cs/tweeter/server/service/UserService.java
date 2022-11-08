@@ -3,8 +3,12 @@ package edu.byu.cs.tweeter.server.service;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
+import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
+import edu.byu.cs.tweeter.model.net.request.UserRequest;
 import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
+import edu.byu.cs.tweeter.model.net.response.UserResponse;
+import edu.byu.cs.tweeter.server.dao.UserDAO;
 import edu.byu.cs.tweeter.util.FakeData;
 
 public class UserService {
@@ -58,4 +62,36 @@ public class UserService {
         }
         return new Response(true);
     }
+
+    public LoginResponse register(RegisterRequest request) {
+        if(request.getUsername() == null){
+            throw new RuntimeException("[Bad Request] Missing a username");
+        } else if(request.getPassword() == null) {
+            throw new RuntimeException("[Bad Request] Missing a password");
+        } else if(request.getFirstName() == null) {
+            throw new RuntimeException("[Bad Request] Missing a first name");
+        } else if(request.getLastName() == null) {
+            throw new RuntimeException("[Bad Request] Missing a last name");
+        }
+
+        // TODO: Generates dummy data. Replace with a real implementation.
+        User user = getDummyUser();
+        AuthToken authToken = getDummyAuthToken();
+        return new LoginResponse(user, authToken);
+    }
+
+    public UserResponse getUser(UserRequest request) {
+        if(request.getUserAlias() == null){
+            throw new RuntimeException("[Bad Request] Missing an alias");
+        } else if(request.getAuthToken() == null) {
+            throw new RuntimeException("[Bad Request] Missing auth token");
+        }
+
+        return getUserDAO().getUser(request);
+    }
+
+    UserDAO getUserDAO() {
+        return new UserDAO();
+    }
+
 }
