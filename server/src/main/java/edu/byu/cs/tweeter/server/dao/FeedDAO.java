@@ -12,12 +12,13 @@ import edu.byu.cs.tweeter.util.FakeData;
 /**
  * A DAO for accessing 'feed' data from the database.
  */
-public class FeedDAO extends AbstractDAO {
+public class FeedDAO extends AbstractDAO implements IFeedDAO {
 
     public FeedDAO(DatabaseFactory dbFactory) {
         super(dbFactory);
     }
 
+    @Override
     public StatusResponse getFeed(StatusRequest request) {
         // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getLimit() > 0;

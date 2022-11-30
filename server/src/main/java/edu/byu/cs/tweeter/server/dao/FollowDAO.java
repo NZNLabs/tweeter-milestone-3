@@ -12,13 +12,11 @@ import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.server.factories.DatabaseFactory;
 import edu.byu.cs.tweeter.util.FakeData;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 /**
  * A DAO for accessing 'following' data from the database.
  */
-public class FollowDAO extends AbstractDAO {
+public class FollowDAO extends AbstractDAO implements IFollowDAO {
 
     public FollowDAO(DatabaseFactory dbFactory) {
         super(dbFactory);
@@ -32,6 +30,7 @@ public class FollowDAO extends AbstractDAO {
      * @param followingAlias the User whose count of how many following is desired.
      * @return said count.
      */
+    @Override
     public CountResponse getFollowingCount(String followingAlias) {
         // TODO: uses the dummy data.  Replace with a real implementation.
         assert followingAlias != null;
@@ -48,6 +47,7 @@ public class FollowDAO extends AbstractDAO {
      *                other information required to satisfy the request.
      * @return the followees.
      */
+    @Override
     public FollowingResponse getFollowees(FollowingRequest request) {
         assert request.getLimit() > 0;
         assert request.getFollowerAlias() != null;
@@ -122,11 +122,12 @@ public class FollowDAO extends AbstractDAO {
         return FakeData.getInstance();
     }
 
-
+    @Override
     public Response getFollow(FollowRequest request) {
         return new Response(true);
     }
 
+    @Override
     public Response getUnfollow(UnfollowRequest request) {
         return new Response(true);
     }

@@ -16,7 +16,7 @@ import edu.byu.cs.tweeter.util.FakeData;
 /**
  * A DAO for accessing 'following' data from the database.
  */
-public class FollowerDAO extends AbstractDAO {
+public class FollowerDAO extends AbstractDAO implements IFollowerDAO {
 
     public FollowerDAO(DatabaseFactory dbFactory) {
         super(dbFactory);
@@ -29,6 +29,7 @@ public class FollowerDAO extends AbstractDAO {
      * @param followerAlias the User whose count of how many following is desired.
      * @return said count.
      */
+    @Override
     public CountResponse getFollowerCount(String followerAlias) {
         // TODO: uses the dummy data.  Replace with a real implementation.
         assert followerAlias != null;
@@ -45,6 +46,7 @@ public class FollowerDAO extends AbstractDAO {
      *                other information required to satisfy the request.
      * @return the followers.
      */
+    @Override
     public FollowersResponse getFollowers(FollowersRequest request) {
         assert request.getLimit() > 0;
         assert request.getFollowerAlias() != null;
@@ -69,6 +71,7 @@ public class FollowerDAO extends AbstractDAO {
         return new FollowersResponse(responseFollowers, hasMorePages);
     }
 
+    @Override
     public IsFollowerResponse getIsFollower(IsFollowerRequest request) {
         assert request.getFolloweeAlias() != null;
         assert request.getFollowerAlias() != null;

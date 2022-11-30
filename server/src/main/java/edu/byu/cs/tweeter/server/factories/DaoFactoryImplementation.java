@@ -16,27 +16,27 @@ public class DaoFactoryImplementation implements DaoFactory {
     FeedDAO feedDao = new FeedDAO(dbFactory);
 
     @Override
-    public UserDAO getUserDAO() {
+    public IUserDAO getUserDAO() {
         return userDao;
     }
 
     @Override
-    public StoryDAO getStoryDAO() {
+    public IStoryDAO getStoryDAO() {
         return storyDao;
     }
 
     @Override
-    public FollowerDAO getFollowerDAO() {
+    public IFollowerDAO getFollowerDAO() {
         return followerDao;
     }
 
     @Override
-    public FollowDAO getFollowDAO() {
+    public IFollowDAO getFollowDAO() {
         return followDao;
     }
 
     @Override
-    public FeedDAO getFeedDAO() {
+    public IFeedDAO getFeedDAO() {
         return feedDao;
     }
 }
