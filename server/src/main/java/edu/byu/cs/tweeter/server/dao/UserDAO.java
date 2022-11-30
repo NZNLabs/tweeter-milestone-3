@@ -21,7 +21,6 @@ public class UserDAO extends AbstractDAO implements IUserDAO{
 
     @Override
     public UserResponse getUser(UserRequest request) {
-        // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getAuthToken() != null;
         assert request.getUserAlias() != null;
 

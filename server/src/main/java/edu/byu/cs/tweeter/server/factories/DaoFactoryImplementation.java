@@ -14,6 +14,7 @@ public class DaoFactoryImplementation implements DaoFactory {
     FollowerDAO followerDao = new FollowerDAO(dbFactory);
     FollowDAO followDao = new FollowDAO(dbFactory);
     FeedDAO feedDao = new FeedDAO(dbFactory);
+    AuthDAO authDao = new AuthDAO(dbFactory);
 
     @Override
     public IUserDAO getUserDAO() {
@@ -38,5 +39,10 @@ public class DaoFactoryImplementation implements DaoFactory {
     @Override
     public IFeedDAO getFeedDAO() {
         return feedDao;
+    }
+
+    @Override
+    public IAuthDAO getAuthDAO() {
+        return authDao;
     }
 }

@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.server.factories;
 
+import edu.byu.cs.tweeter.server.dao.IAuthDAO;
 import edu.byu.cs.tweeter.server.dao.IFeedDAO;
 import edu.byu.cs.tweeter.server.dao.IFollowDAO;
 import edu.byu.cs.tweeter.server.dao.IFollowerDAO;
@@ -17,5 +18,7 @@ public interface DaoFactory {
     IFollowDAO getFollowDAO();
 
     IFeedDAO getFeedDAO();
+
+    IAuthDAO getAuthDAO();
 
 }
