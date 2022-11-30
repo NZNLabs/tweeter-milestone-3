@@ -10,12 +10,17 @@ import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.response.CountResponse;
 import edu.byu.cs.tweeter.model.net.response.FollowersResponse;
 import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
+import edu.byu.cs.tweeter.server.factories.DatabaseFactory;
 import edu.byu.cs.tweeter.util.FakeData;
 
 /**
  * A DAO for accessing 'following' data from the database.
  */
-public class FollowerDAO {
+public class FollowerDAO extends AbstractDAO {
+
+    public FollowerDAO(DatabaseFactory dbFactory) {
+        super(dbFactory);
+    }
 
     /**
      * Gets the count of users from the database that the user specified is following. The
@@ -41,7 +46,6 @@ public class FollowerDAO {
      * @return the followers.
      */
     public FollowersResponse getFollowers(FollowersRequest request) {
-        // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getLimit() > 0;
         assert request.getFollowerAlias() != null;
 

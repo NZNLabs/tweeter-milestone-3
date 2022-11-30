@@ -8,18 +8,25 @@ import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.request.StatusRequest;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.StatusResponse;
+import edu.byu.cs.tweeter.server.factories.DatabaseFactory;
 import edu.byu.cs.tweeter.util.FakeData;
 
 /**
  * A DAO for accessing 'story' data from the database.
  */
-public class StoryDAO {
+public class StoryDAO extends AbstractDAO implements IStoryDAO {
 
+    public StoryDAO(DatabaseFactory dbFactory) {
+        super(dbFactory);
+    }
+
+    @Override
     public Response postStatus(PostStatusRequest request) {
         assert request.getStatus() != null;
         return new Response(true);
     }
 
+    @Override
     public StatusResponse getStory(StatusRequest request) {
         // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getLimit() > 0;

@@ -3,14 +3,18 @@ package edu.byu.cs.tweeter.model.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+
 /**
  * Represents a user in the system.
  */
+@DynamoDbBean
 public class User implements Comparable<User>, Serializable {
 
+    private String alias;
     private String firstName;
     private String lastName;
-    private String alias;
     private String imageUrl;
 
     /**
@@ -27,6 +31,15 @@ public class User implements Comparable<User>, Serializable {
         this.lastName = lastName;
         this.alias = alias;
         this.imageUrl = imageURL;
+    }
+
+    @DynamoDbPartitionKey
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     public String getFirstName() {
@@ -47,14 +60,6 @@ public class User implements Comparable<User>, Serializable {
 
     public String getName() {
         return String.format("%s %s", firstName, lastName);
-    }
-
-    public String getAlias() {
-        return alias;
-    }
-
-    public void setAlias(String alias) {
-        this.alias = alias;
     }
 
     public String getImageUrl() {

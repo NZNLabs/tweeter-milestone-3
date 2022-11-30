@@ -4,13 +4,13 @@ import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.request.StatusRequest;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.StatusResponse;
-import edu.byu.cs.tweeter.server.dao.FeedDAO;
-import edu.byu.cs.tweeter.server.dao.StoryDAO;
+import edu.byu.cs.tweeter.server.dao.IFeedDAO;
+import edu.byu.cs.tweeter.server.dao.IStoryDAO;
 
 /**
  * Contains the business logic
  */
-public class StatusService {
+public class StatusService extends AbstractService {
 
     public StatusResponse getFeed(StatusRequest request) {
         if(request.getUserAlias() == null) {
@@ -37,12 +37,8 @@ public class StatusService {
         return getStoryDAO().postStatus(request);
     }
 
-    FeedDAO getFeedDAO() {
-        return new FeedDAO();
-    }
+    IFeedDAO getFeedDAO() {return daoFactory.getFeedDAO();}
 
-    StoryDAO getStoryDAO() {return new StoryDAO();}
-
-
+    IStoryDAO getStoryDAO() {return daoFactory.getStoryDAO();}
 
 }

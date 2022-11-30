@@ -1,8 +1,8 @@
 package edu.byu.cs.tweeter.server.service;
 
+import edu.byu.cs.tweeter.model.net.request.CountRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
-import edu.byu.cs.tweeter.model.net.request.CountRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
 import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.request.UnfollowRequest;
@@ -12,12 +12,13 @@ import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
 import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.server.dao.FollowDAO;
-import edu.byu.cs.tweeter.server.dao.FollowerDAO;
+import edu.byu.cs.tweeter.server.dao.IFollowDAO;
+import edu.byu.cs.tweeter.server.dao.IFollowerDAO;
 
 /**
  * Contains the business logic for getting the users a user is following.
  */
-public class FollowService {
+public class FollowService extends AbstractService {
 
     /**
      * Returns the users that the user specified in the request is following. Uses information in
@@ -44,9 +45,7 @@ public class FollowService {
      *
      * @return the instance.
      */
-    FollowDAO getFollowingDAO() {
-        return new FollowDAO();
-    }
+    IFollowDAO getFollowingDAO() {return daoFactory.getFollowDAO();}
 
 
     public CountResponse getFollowingCount(CountRequest request) {
@@ -77,9 +76,7 @@ public class FollowService {
         return getFollowersDAO().getFollowers(request);
     }
 
-    FollowerDAO getFollowersDAO() {
-        return new FollowerDAO();
-    }
+    IFollowerDAO getFollowersDAO() {return daoFactory.getFollowerDAO();}
 
     public CountResponse getFollowerCount(CountRequest request) {
         if(request.getUserAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include user alias");}
@@ -91,6 +88,5 @@ public class FollowService {
         if(request.getFolloweeAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include followee alias");}
         return getFollowersDAO().getIsFollower(request);
     }
-
 
 }

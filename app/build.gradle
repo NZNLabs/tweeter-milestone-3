@@ -8,7 +8,7 @@ android {
     compileSdk 33
     defaultConfig {
         applicationId "edu.byu.cs.tweeter"
-        minSdkVersion 30
+        minSdkVersion 27
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
@@ -24,6 +24,10 @@ android {
     compileOptions {
         sourceCompatibility = 11
         targetCompatibility = 11
+    }
+
+    packagingOptions {
+        resources.excludes.add("META-INF/*")
     }
 
     // This doesn't seem to be required (tests work without it) but for consistency of enabling

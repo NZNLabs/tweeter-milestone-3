@@ -12,12 +12,13 @@ import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
 import edu.byu.cs.tweeter.server.dao.FollowDAO;
+import edu.byu.cs.tweeter.server.dao.IFollowDAO;
 
 public class FollowServiceTest {
 
     private FollowingRequest request;
     private FollowingResponse expectedResponse;
-    private FollowDAO mockFollowDAO;
+    private IFollowDAO mockFollowDAO;
     private FollowService followServiceSpy;
 
     @BeforeEach
@@ -38,7 +39,7 @@ public class FollowServiceTest {
 
         // Setup a mock FollowDAO that will return known responses
         expectedResponse = new FollowingResponse(Arrays.asList(resultUser1, resultUser2, resultUser3), false);
-        mockFollowDAO = Mockito.mock(FollowDAO.class);
+        mockFollowDAO = Mockito.mock(IFollowDAO.class);
         Mockito.when(mockFollowDAO.getFollowees(request)).thenReturn(expectedResponse);
 
         followServiceSpy = Mockito.spy(FollowService.class);

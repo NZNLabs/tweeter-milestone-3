@@ -10,12 +10,20 @@ import edu.byu.cs.tweeter.model.net.request.UnfollowRequest;
 import edu.byu.cs.tweeter.model.net.response.CountResponse;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
+import edu.byu.cs.tweeter.server.factories.DatabaseFactory;
 import edu.byu.cs.tweeter.util.FakeData;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 /**
  * A DAO for accessing 'following' data from the database.
  */
-public class FollowDAO {
+public class FollowDAO extends AbstractDAO {
+
+    public FollowDAO(DatabaseFactory dbFactory) {
+        super(dbFactory);
+    }
+//    private static final DynamoDbTable<Follows> ddbTable = ddbEnhancedClient.table(TableName, TableSchema.fromBean(Follows.class));
 
     /**
      * Gets the count of users from the database that the user specified is following. The
@@ -41,7 +49,6 @@ public class FollowDAO {
      * @return the followees.
      */
     public FollowingResponse getFollowees(FollowingRequest request) {
-        // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getLimit() > 0;
         assert request.getFollowerAlias() != null;
 

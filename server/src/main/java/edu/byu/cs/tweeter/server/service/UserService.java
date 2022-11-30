@@ -8,10 +8,10 @@ import edu.byu.cs.tweeter.model.net.request.UserRequest;
 import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.UserResponse;
-import edu.byu.cs.tweeter.server.dao.UserDAO;
+import edu.byu.cs.tweeter.server.dao.IUserDAO;
 import edu.byu.cs.tweeter.util.FakeData;
 
-public class UserService {
+public class UserService extends AbstractService {
 
     public LoginResponse login(LoginRequest request) {
         if(request.getUsername() == null){
@@ -90,8 +90,8 @@ public class UserService {
         return getUserDAO().getUser(request);
     }
 
-    UserDAO getUserDAO() {
-        return new UserDAO();
+    IUserDAO getUserDAO() {
+        return daoFactory.getUserDAO();
     }
 
 }

@@ -6,12 +6,17 @@ import java.util.List;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.net.request.StatusRequest;
 import edu.byu.cs.tweeter.model.net.response.StatusResponse;
+import edu.byu.cs.tweeter.server.factories.DatabaseFactory;
 import edu.byu.cs.tweeter.util.FakeData;
 
 /**
  * A DAO for accessing 'feed' data from the database.
  */
-public class FeedDAO {
+public class FeedDAO extends AbstractDAO {
+
+    public FeedDAO(DatabaseFactory dbFactory) {
+        super(dbFactory);
+    }
 
     public StatusResponse getFeed(StatusRequest request) {
         // TODO: Generates dummy data. Replace with a real implementation.
