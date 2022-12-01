@@ -9,16 +9,16 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 public class FollowersRequest {
 
     private AuthToken authToken;
-    private String followerAlias;
+    private String followeeAlias;
     private int limit;
     private String lastFollowerAlias;
 
 
     private FollowersRequest() {}
 
-    public FollowersRequest(AuthToken authToken, String followerAlias, int limit, String lastFollowerAlias) {
+    public FollowersRequest(AuthToken authToken, String followeeAlias, int limit, String lastFollowerAlias) {
         this.authToken = authToken;
-        this.followerAlias = followerAlias;
+        this.followeeAlias = followeeAlias;
         this.limit = limit;
         this.lastFollowerAlias = lastFollowerAlias;
     }
@@ -31,12 +31,12 @@ public class FollowersRequest {
         this.authToken = authToken;
     }
 
-    public String getFollowerAlias() {
-        return followerAlias;
+    public String getFolloweeAlias() {
+        return followeeAlias;
     }
 
-    public void setFollowerAlias(String followerAlias) {
-        this.followerAlias = followerAlias;
+    public void setFolloweeAlias(String followeeAlias) {
+        this.followeeAlias = followeeAlias;
     }
 
     public int getLimit() {

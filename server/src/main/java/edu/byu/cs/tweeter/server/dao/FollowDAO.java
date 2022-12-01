@@ -1,40 +1,95 @@
 package edu.byu.cs.tweeter.server.dao;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.model.net.request.FollowRequest;
+import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
-import edu.byu.cs.tweeter.model.net.request.UnfollowRequest;
+import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.response.CountResponse;
-import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
+import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.server.factories.DatabaseFactory;
-import edu.byu.cs.tweeter.util.FakeData;
+import edu.byu.cs.tweeter.server.model.DBFollow;
+import edu.byu.cs.tweeter.server.model.response.DBFollowResponse;
+import software.amazon.awssdk.core.pagination.sync.SdkIterable;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 /**
  * A DAO for accessing 'following' data from the database.
  */
 public class FollowDAO extends AbstractDAO implements IFollowDAO {
 
+    private final DynamoDbTable<DBFollow> ddbTable = this.dbFactory.getFollowTable();
+
     public FollowDAO(DatabaseFactory dbFactory) {
         super(dbFactory);
     }
-//    private static final DynamoDbTable<Follows> ddbTable = ddbEnhancedClient.table(TableName, TableSchema.fromBean(Follows.class));
 
     /**
      * Gets the count of users from the database that the user specified is following. The
      * current implementation uses generated data and doesn't actually access a database.
      *
-     * @param followingAlias the User whose count of how many following is desired.
+     * @param followerAlias the User whose count of how many following is desired.
      * @return said count.
      */
     @Override
-    public CountResponse getFollowingCount(String followingAlias) {
-        // TODO: uses the dummy data.  Replace with a real implementation.
-        assert followingAlias != null;
-        return new CountResponse(getDummyFollowees().size());
+    public CountResponse getFollowingCount(String followerAlias) {
+        AttributeValue attVal = AttributeValue.builder().s(followerAlias).build();
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(Key.builder()
+                .partitionValue(attVal)
+                .build());
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(queryConditional)
+                .build();
+
+        // Get items in the table.
+        SdkIterable<Page<DBFollow>> results = ddbTable.query(queryRequest);
+
+        AtomicInteger count = new AtomicInteger();
+        results.forEach(page -> {
+            count.addAndGet(page.items().size());
+        });
+
+        return new CountResponse(count.intValue());
+    }
+
+    @Override
+    public CountResponse getFollowerCount(String userAlias) {
+
+        DynamoDbIndex<DBFollow> ddbTableIndex = ddbTable.index(DBFollow.SECONDARY_INDEX_FOLLOWEE);
+        AttributeValue attVal = AttributeValue.builder()
+                .s(userAlias)
+                .build();
+
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(Key.builder()
+                .partitionValue(attVal)
+                .build());
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(queryConditional)
+                .build();
+
+        // Get items in the table.
+        SdkIterable<Page<DBFollow>> results = ddbTableIndex.query(queryRequest);
+
+        AtomicInteger count = new AtomicInteger();
+        results.forEach(page -> {
+            count.addAndGet(page.items().size());
+        });
+
+        return new CountResponse(count.intValue());
     }
 
     /**
@@ -48,88 +103,149 @@ public class FollowDAO extends AbstractDAO implements IFollowDAO {
      * @return the followees.
      */
     @Override
-    public FollowingResponse getFollowees(FollowingRequest request) {
+    public DBFollowResponse getFollowees(FollowingRequest request) {
         assert request.getLimit() > 0;
         assert request.getFollowerAlias() != null;
 
-        List<User> allFollowees = getDummyFollowees();
-        List<User> responseFollowees = new ArrayList<>(request.getLimit());
+        try{
+            System.out.println("getFollowees 1 follower alias : " + request.getFollowerAlias());
+            QueryConditional queryConditional = QueryConditional.keyEqualTo(Key.builder()
+                    .partitionValue(request.getFollowerAlias())
+                    .build());
 
-        boolean hasMorePages = false;
+            System.out.println("getFollowees 2");
 
-        if(request.getLimit() > 0) {
-            if (allFollowees != null) {
-                int followeesIndex = getFolloweesStartingIndex(request.getLastFolloweeAlias(), allFollowees);
-
-                for(int limitCounter = 0; followeesIndex < allFollowees.size() && limitCounter < request.getLimit(); followeesIndex++, limitCounter++) {
-                    responseFollowees.add(allFollowees.get(followeesIndex));
-                }
-
-                hasMorePages = followeesIndex < allFollowees.size();
+            Map<String, AttributeValue> lastEvaluatedKey = null;
+            if (request.getLastFolloweeAlias() != null) {
+                lastEvaluatedKey = new java.util.HashMap<>(Collections.emptyMap());
+                lastEvaluatedKey.put("followee_handle", AttributeValue.builder().s(request.getLastFolloweeAlias()).build());
+                lastEvaluatedKey.put("follower_handle", AttributeValue.builder().s(request.getFollowerAlias()).build());
             }
-        }
 
-        return new FollowingResponse(responseFollowees, hasMorePages);
-    }
+            System.out.println("getFollowees 3");
+            QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                    .queryConditional(queryConditional)
+                    .scanIndexForward(true)
+                    .limit(request.getLimit())
+                    .exclusiveStartKey(lastEvaluatedKey)
+                    .build();
 
-    /**
-     * Determines the index for the first followee in the specified 'allFollowees' list that should
-     * be returned in the current request. This will be the index of the next followee after the
-     * specified 'lastFollowee'.
-     *
-     * @param lastFolloweeAlias the alias of the last followee that was returned in the previous
-     *                          request or null if there was no previous request.
-     * @param allFollowees the generated list of followees from which we are returning paged results.
-     * @return the index of the first followee to be returned.
-     */
-    private int getFolloweesStartingIndex(String lastFolloweeAlias, List<User> allFollowees) {
 
-        int followeesIndex = 0;
+            System.out.println("getFollowees 4");
+            // Get items in the table.
+            Optional<Page<DBFollow>> result = ddbTable.query(queryRequest).stream().findFirst();
 
-        if(lastFolloweeAlias != null) {
-            // This is a paged request for something after the first page. Find the first item
-            // we should return
-            for (int i = 0; i < allFollowees.size(); i++) {
-                if(lastFolloweeAlias.equals(allFollowees.get(i).getAlias())) {
-                    // We found the index of the last item returned last time. Increment to get
-                    // to the first one we should return
-                    followeesIndex = i + 1;
-                    break;
-                }
+            System.out.println("getFollowees 5");
+            // Display the results.
+            if (result.isPresent()) {
+                Page<DBFollow> page = result.get();
+                List<DBFollow> followees = page.items();
+                System.out.println("getFollowees size: " + followees.size());
+                return new DBFollowResponse(followees, page.lastEvaluatedKey() != null);
+            } else {
+                System.out.println("No results returned");
+                return new DBFollowResponse(new ArrayList<>(), false);
             }
+        } catch (Exception e) {
+            String error = "Failed to get followees 2" + e.getClass();
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return new DBFollowResponse(error);
         }
-
-        return followeesIndex;
-    }
-
-    /**
-     * Returns the list of dummy followee data. This is written as a separate method to allow
-     * mocking of the followees.
-     *
-     * @return the followees.
-     */
-    List<User> getDummyFollowees() {
-        return getFakeData().getFakeUsers();
-    }
-
-    /**
-     * Returns the {@link FakeData} object used to generate dummy followees.
-     * This is written as a separate method to allow mocking of the {@link FakeData}.
-     *
-     * @return a {@link FakeData} instance.
-     */
-    FakeData getFakeData() {
-        return FakeData.getInstance();
     }
 
     @Override
-    public Response getFollow(FollowRequest request) {
-        return new Response(true);
+    public DBFollowResponse getFollowers(FollowersRequest request) {
+        try{
+            DynamoDbIndex<DBFollow> ddbTableIndex = ddbTable.index(DBFollow.SECONDARY_INDEX_FOLLOWEE);
+            AttributeValue attVal = AttributeValue.builder()
+                    .s(request.getFolloweeAlias())
+                    .build();
+
+            QueryConditional queryConditional = QueryConditional.keyEqualTo(Key.builder()
+                    .partitionValue(attVal)
+                    .build());
+
+            Map<String, AttributeValue> lastEvaluatedKey = null;
+            if (request.getLastFollowerAlias() != null) {
+                lastEvaluatedKey = new java.util.HashMap<>(Collections.emptyMap());
+                lastEvaluatedKey.put("followee_handle", AttributeValue.builder().s(request.getFolloweeAlias()).build());
+                lastEvaluatedKey.put("follower_handle", AttributeValue.builder().s(request.getLastFollowerAlias()).build());
+            }
+
+            QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                    .queryConditional(queryConditional)
+                    .scanIndexForward(true)
+                    .limit(10)
+                    .exclusiveStartKey(lastEvaluatedKey)
+                    .build();
+
+            // Get items in the table.
+            Optional<Page<DBFollow>> result = ddbTableIndex.query(queryRequest).stream().findFirst();
+
+            // Display the results.
+            if (result.isPresent()) {
+                Page<DBFollow> page = result.get();
+                List<DBFollow> followers = page.items();
+                System.out.println("getFollowers size: " + followers.size());
+                return new DBFollowResponse(followers, page.lastEvaluatedKey() != null);
+            } else {
+                System.out.println("getFollowers No results returned");
+                return new DBFollowResponse(new ArrayList<>(), false);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getClass());
+            e.printStackTrace();
+            return new DBFollowResponse("getFollowers: Failed to get followers " + e.getClass());
+        }
     }
 
     @Override
-    public Response getUnfollow(UnfollowRequest request) {
-        return new Response(true);
+    public IsFollowerResponse getIsFollower(IsFollowerRequest request) {
+        try {
+            assert request.getFolloweeAlias() != null;
+            assert request.getFollowerAlias() != null;
+
+            Key key = Key.builder().partitionValue(request.getFollowerAlias()).sortValue(request.getFolloweeAlias()).build();
+            DBFollow follow = ddbTable.getItem(key);
+            return new IsFollowerResponse(follow != null);
+        } catch (Exception | AssertionError e) {
+            String error =  "Failed check follow status " + e.getClass();
+            System.out.println(error);
+            return new IsFollowerResponse(error);
+        }
+    }
+
+    @Override
+    public Response postFollow(DBFollow request) {
+        try {
+            assert request.getFollowee_handle() != null;
+            assert request.getFollower_handle() != null;
+            assert request.getFollowee_name() != null;
+            assert request.getFollower_name() != null;
+
+            ddbTable.putItem(request);
+            return new Response(true);
+        } catch (Exception | AssertionError e) {
+            System.out.println("Failed to post follow: " + e.getClass());
+            return new Response(false, "Failed to follow " + e.getClass());
+        }
+    }
+
+    @Override
+    public Response deleteFollow(DBFollow request) {
+        try {
+            assert request.getFollowee_handle() != null;
+            assert request.getFollower_handle() != null;
+            assert request.getFollowee_name() != null;
+            assert request.getFollower_name() != null;
+
+            ddbTable.deleteItem(request);
+            return new Response(true);
+        } catch (Exception | AssertionError e) {
+            System.out.println("Failed to delete follow: " + e.getClass());
+            return new Response(false, "Failed to follow " + e.getClass());
+        }
     }
 
 }

@@ -5,9 +5,13 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.domain.Follow;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
@@ -16,10 +20,14 @@ import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.UserResponse;
 import edu.byu.cs.tweeter.server.dao.IAuthDAO;
+import edu.byu.cs.tweeter.server.dao.IFollowDAO;
 import edu.byu.cs.tweeter.server.dao.IUserDAO;
 import edu.byu.cs.tweeter.server.model.DBAuthToken;
+import edu.byu.cs.tweeter.server.model.DBFollow;
+import edu.byu.cs.tweeter.server.util.AuthManagement;
 import edu.byu.cs.tweeter.server.util.Constants;
 import edu.byu.cs.tweeter.server.util.PBKDF2WithHmacSHA1Hashing;
+import edu.byu.cs.tweeter.util.FakeData;
 
 public class UserService extends AbstractService {
 
@@ -44,8 +52,16 @@ public class UserService extends AbstractService {
             return new LoginResponse("Invalid Password");
         }
 
+        // updating expiration date on auth token
+        boolean success = AuthManagement.updateAuthToken(dbAuthToken, getAuthDAO());
+        if (!success) {
+            String error = "Login: Unable to update auth token";
+            System.out.println(error);
+            return new LoginResponse(error);
+        }
+
         AuthToken authToken = new AuthToken(dbAuthToken.authToken, dbAuthToken.dateTime);
-        UserResponse userResponse = getUserDAO().getUser(new UserRequest(authToken, request.getUsername()));
+        UserResponse userResponse = getUserDAO().getUser(request.getUsername());
         if (userResponse.isSuccess()) {
 
             return new LoginResponse(userResponse.getUser(), authToken);
@@ -105,12 +121,66 @@ public class UserService extends AbstractService {
 
         User user = new User(request.getFirstName(), request.getLastName(), request.getUsername(), resourceURL);
         boolean postUserSuccess = getUserDAO().postUser(user);
+        populateDBWithUsers(user, getUserDAO(), daoFactory.getFollowDAO());
+
         if (postUserSuccess) {
             return new LoginResponse(user, new AuthToken(authToken.authToken, authToken.dateTime));
         } else {
             return new LoginResponse("Error: Failed to post user");
         }
     }
+
+    private void populateDBWithUsers(User newUser, IUserDAO userDAO, IFollowDAO followDAO) {
+        try {
+            System.out.println("populateDBWithUsers: populating users");
+            ArrayList<User> users = new ArrayList<>(FakeData.getInstance().getFakeUsers());
+            for (User user : users) {
+                userDAO.postUser(user);
+            }
+
+            users.add(newUser); // ensuring that the person being registered gets followers ;)
+
+            final int numFollowers = 3;
+            ArrayList<DBFollow> randomFollows = new ArrayList<>();
+            for (User user : users) {
+
+                // find N random followers for every user
+                Random random = new Random();
+                ArrayList<Integer> randomIndices = new ArrayList<>();
+                while (randomIndices.size() < numFollowers) {
+                    int idx = random.nextInt(users.size());
+                    boolean idxNotBeingUsed = true;
+                    for (Integer index : randomIndices) {
+                        if (idx == index) {
+                            idxNotBeingUsed = false;
+                            break;
+                        }
+                    }
+                    if (idxNotBeingUsed) {
+                        randomIndices.add(idx);
+                    }
+                }
+
+                // create the follow list
+                for (Integer idx : randomIndices) {
+                    User follower = users.get(idx);
+                    randomFollows.add(new DBFollow(follower.getAlias(), follower.getName(), user.getAlias(), user.getName()));
+                }
+            }
+
+            System.out.println("populateDBWithUsers: posting follows");
+            // post the follow list to db
+            for (DBFollow follow : randomFollows) {
+                followDAO.postFollow(follow);
+            }
+
+            System.out.println("populateDBWithUsers: success");
+        } catch (Exception e) {
+            System.out.println("populateDBWithUsers: exception: " + e.getClass());
+            e.printStackTrace();
+        }
+    }
+
 
     private String createAuthToken() {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -130,7 +200,10 @@ public class UserService extends AbstractService {
             throw new RuntimeException("[Bad Request] Missing auth token");
         }
 
-        return getUserDAO().getUser(request);
+        boolean isValid = AuthManagement.validateAuthToken(request.getAuthToken(), getAuthDAO());
+        if (!isValid) { return new UserResponse("expired"); }
+
+        return getUserDAO().getUser(request.getUserAlias());
     }
 
     IUserDAO getUserDAO() {

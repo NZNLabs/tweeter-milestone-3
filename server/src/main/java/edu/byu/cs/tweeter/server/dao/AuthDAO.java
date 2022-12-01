@@ -36,12 +36,12 @@ public class AuthDAO extends AbstractDAO implements IAuthDAO{
             assert request.getDateTime() != null;
             assert request.getUsername() != null;
 
-            System.out.println("LETS SEE IF THIS APPEARS");
-
+            System.out.println("updating auth");
             ddbTable.putItem(request);
             return true;
         } catch (AssertionError | Exception e) {
             e.printStackTrace();
+            System.out.println("failed to update auth");
             return false;
         }
     }

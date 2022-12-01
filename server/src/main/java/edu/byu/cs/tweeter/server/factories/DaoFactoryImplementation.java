@@ -11,7 +11,6 @@ public class DaoFactoryImplementation implements DaoFactory {
 
     UserDAO userDao = null;
     StoryDAO storyDao = null;
-    FollowerDAO followerDao = null;
     FollowDAO followDao = null;
     FeedDAO feedDao = null;
     AuthDAO authDao = null;
@@ -26,12 +25,6 @@ public class DaoFactoryImplementation implements DaoFactory {
     public IStoryDAO getStoryDAO() {
         if (storyDao == null) { storyDao = new StoryDAO(dbFactory);}
         return storyDao;
-    }
-
-    @Override
-    public IFollowerDAO getFollowerDAO() {
-        if ( followerDao == null) {followerDao = new FollowerDAO(dbFactory); }
-        return followerDao;
     }
 
     @Override

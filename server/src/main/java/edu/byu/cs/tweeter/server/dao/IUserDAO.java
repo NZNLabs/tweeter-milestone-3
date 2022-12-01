@@ -5,6 +5,6 @@ import edu.byu.cs.tweeter.model.net.request.UserRequest;
 import edu.byu.cs.tweeter.model.net.response.UserResponse;
 
 public interface IUserDAO {
-    UserResponse getUser(UserRequest request);
+    UserResponse getUser(String userAlias);
     boolean postUser(User request);
 }

@@ -22,14 +22,17 @@ public class UserDAO extends AbstractDAO implements IUserDAO{
     }
 
     @Override
-    public UserResponse getUser(UserRequest request) {
+    public UserResponse getUser(String userAlias) {
         try {
-            assert request.getAuthToken() != null;
-            assert request.getUserAlias() != null;
-            Key key = Key.builder().partitionValue(request.getUserAlias()).build();
-            return new UserResponse(ddbTable.getItem(key));
-        } catch (DynamoDbException | AssertionError e) {
-            return new UserResponse(e.getMessage());
+            assert userAlias != null;
+            Key key = Key.builder().partitionValue(userAlias).build();
+            User user = ddbTable.getItem(key);
+            if (user == null) return new UserResponse("User not found " + userAlias);
+            return new UserResponse(user);
+        } catch (Exception | AssertionError e) {
+            String error = "Failed to get user " + e.getClass();
+            System.out.println(error);
+            return new UserResponse(error);
         }
     }
 

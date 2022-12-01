@@ -1,9 +1,9 @@
 package edu.byu.cs.tweeter.server.factories;
 
 
-import edu.byu.cs.tweeter.model.domain.Follow;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.server.model.DBAuthToken;
+import edu.byu.cs.tweeter.server.model.DBFollow;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -13,7 +13,7 @@ public class DatabaseFactoryImplementation implements DatabaseFactory {
     private static final DynamoDbEnhancedClient ddbEnhancedClient = DynamoDbEnhancedClient.create();
 
     private static DynamoDbTable<User> usersTable = null;
-    private static DynamoDbTable<Follow> followTable = null;
+    private static DynamoDbTable<DBFollow> followTable = null;
     private static DynamoDbTable<DBAuthToken> authTable = null;
 
     @Override
@@ -23,8 +23,8 @@ public class DatabaseFactoryImplementation implements DatabaseFactory {
     }
 
     @Override
-    public DynamoDbTable<Follow> getFollowTable() {
-        if (followTable == null) {followTable = ddbEnhancedClient.table("follow", TableSchema.fromBean(Follow.class));}
+    public DynamoDbTable<DBFollow> getFollowTable() {
+        if (followTable == null) {followTable = ddbEnhancedClient.table("follow", TableSchema.fromBean(DBFollow.class));}
         return followTable;
     }
 

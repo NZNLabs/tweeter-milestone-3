@@ -1,5 +1,7 @@
 package edu.byu.cs.tweeter.client.presenter;
 
+import android.util.Log;
+
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -21,6 +23,7 @@ public class FollowingPresenter extends PagedPresenter<User> {
             setLoading(true);
             view.setLoading(true);
 
+            Log.d("FollowingPresenter", "FollowingPresenter get following");
             getFollowing(authToken, user, PAGE_SIZE, lastItem);
         }
     }

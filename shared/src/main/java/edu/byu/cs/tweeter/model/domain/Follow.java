@@ -15,6 +15,9 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
  */
 @DynamoDbBean
 public class Follow implements Serializable {
+
+    public static final String SECONDARY_INDEX_FOLLOWEE = "followee-index";
+
     /**
      * The user doing the following.
      */
@@ -32,12 +35,12 @@ public class Follow implements Serializable {
     }
 
     @DynamoDbPartitionKey
-    @DynamoDbSecondarySortKey(indexNames = "follow_index")
+    @DynamoDbSecondarySortKey(indexNames = SECONDARY_INDEX_FOLLOWEE)
     public User getFollower() {
         return follower;
     }
 
-    @DynamoDbSecondaryPartitionKey(indexNames = "follow_index")
+    @DynamoDbSecondaryPartitionKey(indexNames = SECONDARY_INDEX_FOLLOWEE)
     @DynamoDbSortKey
     public User getFollowee() {
         return followee;

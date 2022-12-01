@@ -20,10 +20,10 @@ do
   aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb:///Users/airbourne25/AndroidStudioProjects/tweeter-milestone-3/server/build/libs/server-all.jar --region us-west-2 &
 done
 
-
 #!/bin/bash
 arr=(
-             "register"
+        "getFollowingCount"
+        "getFollowerCount"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do
