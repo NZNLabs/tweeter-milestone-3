@@ -6,6 +6,8 @@ import edu.byu.cs.tweeter.model.net.response.UserResponse;
 import edu.byu.cs.tweeter.server.factories.DatabaseFactory;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedResponse;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 /**
@@ -21,14 +23,28 @@ public class UserDAO extends AbstractDAO implements IUserDAO{
 
     @Override
     public UserResponse getUser(UserRequest request) {
-        assert request.getAuthToken() != null;
-        assert request.getUserAlias() != null;
-
         try {
+            assert request.getAuthToken() != null;
+            assert request.getUserAlias() != null;
             Key key = Key.builder().partitionValue(request.getUserAlias()).build();
             return new UserResponse(ddbTable.getItem(key));
-        } catch (DynamoDbException e) {
+        } catch (DynamoDbException | AssertionError e) {
             return new UserResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean postUser(User request) {
+        try {
+            assert request.getAlias() != null;
+            assert request.getFirstName() != null;
+            assert request.getLastName() != null;
+            assert request.getImageUrl() != null;
+
+            ddbTable.putItem(request);
+            return true;
+        } catch (DynamoDbException | AssertionError e) {
+            return false;
         }
     }
 

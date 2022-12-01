@@ -1,5 +1,12 @@
 package edu.byu.cs.tweeter.server.service;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Random;
+
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
@@ -10,7 +17,9 @@ import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.UserResponse;
 import edu.byu.cs.tweeter.server.dao.IAuthDAO;
 import edu.byu.cs.tweeter.server.dao.IUserDAO;
-import edu.byu.cs.tweeter.util.FakeData;
+import edu.byu.cs.tweeter.server.model.DBAuthToken;
+import edu.byu.cs.tweeter.server.util.Constants;
+import edu.byu.cs.tweeter.server.util.PBKDF2WithHmacSHA1Hashing;
 
 public class UserService extends AbstractService {
 
@@ -21,33 +30,28 @@ public class UserService extends AbstractService {
             throw new RuntimeException("[Bad Request] Missing a password");
         }
 
-        // TODO: Generates dummy data. Replace with a real implementation.
-        User user = getUserDAO().getUser(request);
-        AuthToken authToken = getAuthDAO().getToken();
-        return new LoginResponse(user, authToken);
-    }
+        DBAuthToken dbAuthToken = getAuthDAO().getToken(request.getUsername());
+        boolean passwordMatch;
+        try {
+            assert dbAuthToken != null;
+            passwordMatch = PBKDF2WithHmacSHA1Hashing.validatePassword(request.getPassword(), dbAuthToken.password);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new LoginResponse("Error: Unable to find auth token: " + e.getClass());
+        }
 
+        if (!passwordMatch) {
+            return new LoginResponse("Invalid Password");
+        }
 
+        AuthToken authToken = new AuthToken(dbAuthToken.authToken, dbAuthToken.dateTime);
+        UserResponse userResponse = getUserDAO().getUser(new UserRequest(authToken, request.getUsername()));
+        if (userResponse.isSuccess()) {
 
-
-    /**
-     * Returns the dummy auth token to be returned by the login operation.
-     * This is written as a separate method to allow mocking of the dummy auth token.
-     *
-     * @return a dummy auth token.
-     */
-    AuthToken getDummyAuthToken() {
-        return getFakeData().getAuthToken();
-    }
-
-    /**
-     * Returns the {@link FakeData} object used to generate dummy users and auth tokens.
-     * This is written as a separate method to allow mocking of the {@link FakeData}.
-     *
-     * @return a {@link FakeData} instance.
-     */
-    FakeData getFakeData() {
-        return FakeData.getInstance();
+            return new LoginResponse(userResponse.getUser(), authToken);
+        } else {
+            return new LoginResponse("Error: User doesn't exist" + userResponse.getMessage());
+        }
     }
 
     public Response logout(AuthToken request) {
@@ -68,10 +72,55 @@ public class UserService extends AbstractService {
             throw new RuntimeException("[Bad Request] Missing a last name");
         }
 
-        // TODO: Generates dummy data. Replace with a real implementation.
-        User user = getUserDAO().postUser(request);
-        AuthToken authToken = getDummyAuthToken();
-        return new LoginResponse(user, authToken);
+        // creating auth token
+        DBAuthToken authToken;
+        try {
+            authToken = new DBAuthToken(
+                    createAuthToken(),
+                    String.valueOf(System.currentTimeMillis()),
+                    PBKDF2WithHmacSHA1Hashing.generateStrongPasswordHash(request.getPassword()),
+                    request.getUsername()
+            );
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            e.printStackTrace();
+            return new LoginResponse("Couln't hash password");
+        }
+
+        boolean success = getAuthDAO().postToken(authToken);
+        if (!success) { return new LoginResponse("Unable to authenticate user"); }
+
+        // Create AmazonS3 object for doing S3 operations
+        String resourceURL = null;
+        try {
+            // https://jacob-cs340-aws-s3.s3.us-west-2.amazonaws.com/profile-pic/jacob.zinn.txt
+            // https://s3.us-west-2.amazonaws.com/jacob-cs340-aws-s3/profile-pic/jacob.zinn.txt
+            AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion("us-west-2").build();
+            String bucket_name = Constants.S3_BUCKET_ID;
+            String key = "profile-pic/" + request.getUsername().replace("@","") + ".txt";
+            s3Client.putObject(bucket_name, key, request.getImage());
+            resourceURL = s3Client.getUrl(Constants.S3_BUCKET_ID, key).toString();
+        } catch (Exception e) {
+            System.out.println(e.getClass());
+        }
+
+        User user = new User(request.getFirstName(), request.getLastName(), request.getUsername(), resourceURL);
+        boolean postUserSuccess = getUserDAO().postUser(user);
+        if (postUserSuccess) {
+            return new LoginResponse(user, new AuthToken(authToken.authToken, authToken.dateTime));
+        } else {
+            return new LoginResponse("Error: Failed to post user");
+        }
+    }
+
+    private String createAuthToken() {
+        String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder salt = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < 18) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+        return salt.toString();
     }
 
     public UserResponse getUser(UserRequest request) {

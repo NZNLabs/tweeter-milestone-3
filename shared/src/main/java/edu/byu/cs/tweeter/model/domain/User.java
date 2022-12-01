@@ -20,7 +20,7 @@ public class User implements Comparable<User>, Serializable {
     /**
      * Allows construction of the object from Json. Private so it won't be called by other code.
      */
-    private User() {}
+    public User() {}
 
     public User(String firstName, String lastName, String imageURL) {
         this(firstName, lastName, String.format("@%s%s", firstName, lastName), imageURL);

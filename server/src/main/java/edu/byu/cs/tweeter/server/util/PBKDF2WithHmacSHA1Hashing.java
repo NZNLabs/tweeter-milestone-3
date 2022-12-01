@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.client.utils;
+package edu.byu.cs.tweeter.server.util;
 
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;

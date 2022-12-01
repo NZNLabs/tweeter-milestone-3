@@ -4,9 +4,16 @@ package edu.byu.cs.tweeter.model.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
+
 /**
  * Represents a follow relationship.
  */
+@DynamoDbBean
 public class Follow implements Serializable {
     /**
      * The user doing the following.
@@ -17,18 +24,21 @@ public class Follow implements Serializable {
      */
     public User followee;
 
-    public Follow() {
-    }
+    public Follow() {}
 
     public Follow(User follower, User followee) {
         this.follower = follower;
         this.followee = followee;
     }
 
+    @DynamoDbPartitionKey
+    @DynamoDbSecondarySortKey(indexNames = "follow_index")
     public User getFollower() {
         return follower;
     }
 
+    @DynamoDbSecondaryPartitionKey(indexNames = "follow_index")
+    @DynamoDbSortKey
     public User getFollowee() {
         return followee;
     }

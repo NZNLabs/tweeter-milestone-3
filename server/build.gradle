@@ -24,8 +24,14 @@ dependencies {
     api "software.amazon.awssdk:dynamodb-enhanced:2.18.21"
     api "software.amazon.awssdk:dynamodb:2.18.21"
 
-    // Testing related dependencies
+    // aws s3
+    implementation "com.amazonaws:aws-java-sdk-s3:1.12.352"
+    implementation 'software.amazon.awssdk:aws-core'
+    implementation platform('software.amazon.awssdk:bom:2.15.0')
+    implementation 'software.amazon.awssdk:kinesis'
+    implementation "javax.xml.bind:jaxb-api:2.3.1" // because of warning when uploading image to s3
 
+    // Testing related dependencies
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
 
