@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.client.view.main.story;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -96,12 +97,14 @@ public class StoryFragment extends BaseFragment implements PagedPresenter.PagedV
 
     @Override
     public void displayErrorMessage(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        showToastSafely(message);
     }
 
     @Override
     public void navigateToUser(@NonNull User user) {
-        Intent intent = new Intent(getContext(), MainActivity.class);
+        Context context = getContext();
+        if (context == null) { return; }
+        Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
     }
@@ -145,7 +148,7 @@ public class StoryFragment extends BaseFragment implements PagedPresenter.PagedV
                 @Override
                 public void onClick(View view) {
                     presenter.getUser(userAlias.getText().toString());
-                    Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
+                    showToastSafely("Getting user's profile...");
                 }
             });
         }
@@ -181,7 +184,7 @@ public class StoryFragment extends BaseFragment implements PagedPresenter.PagedV
                             startActivity(intent);
                         } else {
                             presenter.getUser(clickable);
-                            Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
+                            showToastSafely("Getting user's profile...");
                         }
                     }
 

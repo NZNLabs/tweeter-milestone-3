@@ -14,6 +14,7 @@ public class DaoFactoryImplementation implements DaoFactory {
     FollowDAO followDao = null;
     FeedDAO feedDao = null;
     AuthDAO authDao = null;
+    StatusDAO statusDao = null;
 
     @Override
     public IUserDAO getUserDAO() {
@@ -43,5 +44,11 @@ public class DaoFactoryImplementation implements DaoFactory {
     public IAuthDAO getAuthDAO() {
         if ( authDao == null) {authDao = new AuthDAO(dbFactory); }
         return authDao;
+    }
+
+    @Override
+    public IStatusDAO getStatusDAO() {
+        if (statusDao == null) { statusDao = new StatusDAO(dbFactory); }
+        return statusDao;
     }
 }

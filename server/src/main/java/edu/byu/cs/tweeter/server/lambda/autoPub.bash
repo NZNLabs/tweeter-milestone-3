@@ -22,8 +22,8 @@ done
 
 #!/bin/bash
 arr=(
-        "getFollowingCount"
-        "getFollowerCount"
+        "postStatus"
+        "getStory"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do

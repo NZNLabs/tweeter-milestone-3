@@ -85,7 +85,6 @@ public class FollowService extends AbstractService {
             boolean isValid = AuthManagement.validateAuthToken(request.getAuthToken(), getAuthDAO());
             if (!isValid) { return new FollowersResponse("expired"); }
 
-            System.out.println("Get followrs!!");
             DBFollowResponse response = getFollowDAO().getFollowers(request);
             if (!response.isSuccess()) {
                 return new FollowersResponse("Failed to get followers");
@@ -105,19 +104,7 @@ public class FollowService extends AbstractService {
             System.out.println(error);
             return new FollowersResponse(error);
         }
-
     }
-
-    /**
-     * Returns an instance of {@link FollowDAO}. Allows mocking of the FollowDAO class
-     * for testing purposes. All usages of FollowDAO should get their FollowDAO
-     * instance from this method to allow for mocking of the instance.
-     *
-     * @return the instance.
-     */
-    IFollowDAO getFollowDAO() {return daoFactory.getFollowDAO();}
-    IUserDAO getUserDAO() {return daoFactory.getUserDAO();}
-    IAuthDAO getAuthDAO() {return daoFactory.getAuthDAO();}
 
 
     public CountResponse getFollowingCount(CountRequest request) {

@@ -6,12 +6,9 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.Follow;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
@@ -19,7 +16,6 @@ import edu.byu.cs.tweeter.model.net.request.UserRequest;
 import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.UserResponse;
-import edu.byu.cs.tweeter.server.dao.IAuthDAO;
 import edu.byu.cs.tweeter.server.dao.IFollowDAO;
 import edu.byu.cs.tweeter.server.dao.IUserDAO;
 import edu.byu.cs.tweeter.server.model.DBAuthToken;
@@ -205,11 +201,5 @@ public class UserService extends AbstractService {
 
         return getUserDAO().getUser(request.getUserAlias());
     }
-
-    IUserDAO getUserDAO() {
-        return daoFactory.getUserDAO();
-    }
-
-    IAuthDAO getAuthDAO() {return daoFactory.getAuthDAO(); }
 
 }

@@ -1,6 +1,7 @@
 package edu.byu.cs.tweeter.client.view.login;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -20,13 +21,14 @@ import androidx.fragment.app.Fragment;
 
 import edu.byu.cs.tweeter.R;
 import edu.byu.cs.tweeter.client.presenter.RegisterPresenter;
+import edu.byu.cs.tweeter.client.view.BaseFragment;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.User;
 
 /**
  * Implements the register screen.
  */
-public class RegisterFragment extends Fragment implements RegisterPresenter.View {
+public class RegisterFragment extends BaseFragment implements RegisterPresenter.View {
     private static final String LOG_TAG = "RegisterFragment";
     private static final int RESULT_IMAGE = 10;
 
@@ -83,7 +85,7 @@ public class RegisterFragment extends Fragment implements RegisterPresenter.View
                 try {
                     presenter.validateRegistration(firstName.getText().toString(), lastName.getText().toString(), alias.getText().toString(), password.getText().toString(), imageToUpload.getDrawable());
                     errorView.setText(null);
-                    registeringToast = Toast.makeText(getContext(), "Registering...", Toast.LENGTH_LONG);
+                    registeringToast = makeToastSafely("Registering...");
                     registeringToast.show();
 
                     Bitmap image = ((BitmapDrawable) imageToUpload.getDrawable()).getBitmap();
@@ -111,14 +113,16 @@ public class RegisterFragment extends Fragment implements RegisterPresenter.View
 
     @Override
     public void navigateToUser(User user) {
-        Intent intent = new Intent(getContext(), MainActivity.class);
+        Context context = getContext();
+        if (context == null) { return; }
+        Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
     }
 
     @Override
     public void displayErrorMessage(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        showToastSafely(message);
     }
 
     @Override

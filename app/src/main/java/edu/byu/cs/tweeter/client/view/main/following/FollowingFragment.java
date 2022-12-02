@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.client.view.main.following;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -86,7 +87,9 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
 
     @Override
     public void navigateToUser(User user) {
-        Intent intent = new Intent(getContext(), MainActivity.class);
+        Context context = getContext();
+        if (context == null) { return; }
+        Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
     }
@@ -98,7 +101,7 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
      */
     @Override
     public void displayErrorMessage(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        showToastSafely(message);
     }
 
     @Override
@@ -157,7 +160,7 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
                     @Override
                     public void onClick(View view) {
                         presenter.getUser(userAlias.getText().toString());
-                        Toast.makeText(getContext(), "You selected '" + userName.getText() + "'.", Toast.LENGTH_SHORT).show();
+                        showToastSafely("You selected '" + userName.getText() + "'.");
                     }
                 });
             } else {

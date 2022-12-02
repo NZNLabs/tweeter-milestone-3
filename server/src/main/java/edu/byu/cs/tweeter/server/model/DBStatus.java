@@ -4,6 +4,7 @@ import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.server.util.JsonSerializer;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @DynamoDbBean
 public class DBStatus {
@@ -12,21 +13,20 @@ public class DBStatus {
     public String dateTime;
     public String status;
 
-    public DBStatus() {}
-
-    private static String getSerializedStatus(Status status) {
-        return JsonSerializer.serialize(status);
-    }
-
-    private static Status getDeserializedStatus(String status) {
-        return JsonSerializer.deserialize(status, Status.class);
-    }
-
-
     public DBStatus(String username, String dateTime, String status) {
         this.username = username;
         this.dateTime = dateTime;
         this.status = status;
+    }
+
+    public DBStatus() {}
+
+    public static String getSerializedStatus(Status status) {
+        return JsonSerializer.serialize(status);
+    }
+
+    public static Status getDeserializedStatus(String status) {
+        return JsonSerializer.deserialize(status, Status.class);
     }
 
     @DynamoDbPartitionKey
@@ -38,6 +38,7 @@ public class DBStatus {
         this.username = username;
     }
 
+    @DynamoDbSortKey
     public String getDateTime() {
         return dateTime;
     }

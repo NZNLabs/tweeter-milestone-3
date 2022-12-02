@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.client.view.login;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -79,7 +80,7 @@ public class LoginFragment extends BaseFragment implements LoginPresenter.View {
     @Override
     public void displayInfoMessage(@NonNull String message) {
         clearInfoMessage();
-        loginInToast = Toast.makeText(getContext(), message, Toast.LENGTH_LONG);
+        loginInToast = makeToastSafely(message);
         loginInToast.show();
     }
 
@@ -93,7 +94,9 @@ public class LoginFragment extends BaseFragment implements LoginPresenter.View {
 
     @Override
     public void navigateToUser(@NonNull User user) {
-        Intent intent = new Intent(getContext(), MainActivity.class);
+        Context context = getContext();
+        if (context == null) { return; }
+        Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
     }

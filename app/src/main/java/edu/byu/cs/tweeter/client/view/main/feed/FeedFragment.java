@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.client.view.main.feed;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ import edu.byu.cs.tweeter.R;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.presenter.FeedPresenter;
 import edu.byu.cs.tweeter.client.presenter.PagedPresenter;
+import edu.byu.cs.tweeter.client.view.BaseFragment;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
@@ -44,7 +46,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * Implements the "Feed" tab.
  */
-public class FeedFragment extends Fragment implements PagedPresenter.PagedView<Status> {
+public class FeedFragment extends BaseFragment implements PagedPresenter.PagedView<Status> {
     private static final String USER_KEY = "UserKey";
 
     private static final int LOADING_DATA_VIEW = 0;
@@ -108,12 +110,14 @@ public class FeedFragment extends Fragment implements PagedPresenter.PagedView<S
 
     @Override
     public void displayErrorMessage(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        showToastSafely(message);
     }
 
     @Override
     public void navigateToUser(@NonNull User user) {
-        Intent intent = new Intent(getContext(), MainActivity.class);
+        Context context = getContext();
+        if (context == null) { return; }
+        Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
     }
@@ -147,7 +151,7 @@ public class FeedFragment extends Fragment implements PagedPresenter.PagedView<S
                 @Override
                 public void onClick(View view) {
                     presenter.getUser(userAlias.getText().toString());
-                    Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
+                    showToastSafely("Getting user's profile...");
                 }
             });
         }
@@ -183,7 +187,7 @@ public class FeedFragment extends Fragment implements PagedPresenter.PagedView<S
                             startActivity(intent);
                         } else {
                             presenter.getUser(clickable);
-                            Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
+                            showToastSafely("Getting user's profile...");
                         }
                     }
 

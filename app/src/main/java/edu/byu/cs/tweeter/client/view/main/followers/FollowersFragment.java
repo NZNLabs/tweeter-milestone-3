@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.client.view.main.followers;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,6 +29,7 @@ import edu.byu.cs.tweeter.R;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.presenter.FollowersPresenter;
 import edu.byu.cs.tweeter.client.presenter.PagedPresenter;
+import edu.byu.cs.tweeter.client.view.BaseFragment;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -35,7 +37,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * Implements the "Followers" tab.
  */
-public class FollowersFragment extends Fragment implements PagedPresenter.PagedView<User> {
+public class FollowersFragment extends BaseFragment implements PagedPresenter.PagedView<User> {
 
     private static final String LOG_TAG = "FollowersFragment";
     private static final String USER_KEY = "UserKey";
@@ -102,12 +104,14 @@ public class FollowersFragment extends Fragment implements PagedPresenter.PagedV
 
     @Override
     public void displayErrorMessage(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        makeToastSafely(message);
     }
 
     @Override
     public void navigateToUser(User user) {
-        Intent intent = new Intent(getContext(), MainActivity.class);
+        Context context = getContext();
+        if (context == null) { return; }
+        Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
     }
@@ -137,7 +141,7 @@ public class FollowersFragment extends Fragment implements PagedPresenter.PagedV
                 @Override
                 public void onClick(View view) {
                     presenter.getUser(userAlias.getText().toString());
-                    Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
+                    showToastSafely("Getting user's profile...");
                 }
             });
         }
