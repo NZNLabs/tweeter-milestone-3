@@ -86,6 +86,7 @@ public class RegisterFragment extends BaseFragment implements RegisterPresenter.
                     presenter.validateRegistration(firstName.getText().toString(), lastName.getText().toString(), alias.getText().toString(), password.getText().toString(), imageToUpload.getDrawable());
                     errorView.setText(null);
                     registeringToast = makeToastSafely("Registering...");
+                    if (registeringToast == null) {return;}
                     registeringToast.show();
 
                     Bitmap image = ((BitmapDrawable) imageToUpload.getDrawable()).getBitmap();

@@ -104,7 +104,7 @@ public class FollowersFragment extends BaseFragment implements PagedPresenter.Pa
 
     @Override
     public void displayErrorMessage(String message) {
-        makeToastSafely(message);
+        showToastSafely(message);
     }
 
     @Override

@@ -81,6 +81,7 @@ public class LoginFragment extends BaseFragment implements LoginPresenter.View {
     public void displayInfoMessage(@NonNull String message) {
         clearInfoMessage();
         loginInToast = makeToastSafely(message);
+        if (loginInToast == null) {return;}
         loginInToast.show();
     }
 

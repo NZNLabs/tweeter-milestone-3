@@ -4,7 +4,13 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 import edu.byu.cs.tweeter.client.cache.Cache;
@@ -38,8 +44,29 @@ public class RegisterPresenter extends BasePresenter<RegisterPresenter.View> {
         byte[] imageBytes = bos.toByteArray();
 
         // Intentionally, Use the java Base64 encoder so it is compatible with M4.
-        return Base64.getEncoder().encodeToString(imageBytes);
+//        return Base64.getEncoder().encodeToString(imageBytes);
+        String imageTest = Base64.getEncoder().encodeToString(imageBytes);
+
+
+
+//        String base64Image = imageTest.split(",")[1];
+        byte[] imageBytes2 = Base64.getDecoder().decode(imageTest);
+
+//        byte[] imageBytes2 = javax.xml.bind.DatatypeConverter.parseBase64Binary(imageTest);
+//            BufferedImage img = ImageIO.read(new ByteArrayInputStream(imageBytes));
+
+
+        Path path = Paths.get("jacobAhA" + ".jpg");
+        try {
+            Files.write(path, imageBytes2);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        File file = path.toFile();
+        return imageTest;
     }
+
+
 
     private UserService getUserService() {
         return new UserService();

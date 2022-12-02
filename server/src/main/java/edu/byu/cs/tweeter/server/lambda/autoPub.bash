@@ -22,8 +22,7 @@ done
 
 #!/bin/bash
 arr=(
-        "postStatus"
-        "getStory"
+        "register"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do

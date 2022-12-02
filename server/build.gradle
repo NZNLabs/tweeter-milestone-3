@@ -27,6 +27,8 @@ dependencies {
     // aws s3
     implementation "com.amazonaws:aws-java-sdk-s3:1.12.352"
     implementation 'software.amazon.awssdk:aws-core'
+    implementation 'com.amazonaws:aws-java-sdk-s3'
+    implementation 'software.amazon.awssdk:s3:2.16.29'
     implementation platform('software.amazon.awssdk:bom:2.15.0')
     implementation 'software.amazon.awssdk:kinesis'
     implementation "javax.xml.bind:jaxb-api:2.3.1" // because of warning when uploading image to s3
