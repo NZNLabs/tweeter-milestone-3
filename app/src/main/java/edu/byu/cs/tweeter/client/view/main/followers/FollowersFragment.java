@@ -94,12 +94,6 @@ public class FollowersFragment extends BaseFragment implements PagedPresenter.Pa
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mainInterface.logout();
-    }
-
-    @Override
     public void setLoading(boolean value) {
         followersRecyclerViewAdapter.setLoading(value);
     }
