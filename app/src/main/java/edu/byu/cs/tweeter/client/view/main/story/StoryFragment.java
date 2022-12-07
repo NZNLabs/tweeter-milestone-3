@@ -34,6 +34,7 @@ import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.presenter.PagedPresenter;
 import edu.byu.cs.tweeter.client.presenter.StoryPresenter;
 import edu.byu.cs.tweeter.client.view.BaseFragment;
+import edu.byu.cs.tweeter.client.view.main.FragmentInterface;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
@@ -42,7 +43,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * Implements the "Story" tab.
  */
-public class StoryFragment extends BaseFragment implements PagedPresenter.PagedView<Status> {
+public class StoryFragment extends BaseFragment implements PagedPresenter.PagedView<Status>, FragmentInterface {
     private static final String LOG_TAG = "StoryFragment";
     private static final String USER_KEY = "UserKey";
 
@@ -121,6 +122,16 @@ public class StoryFragment extends BaseFragment implements PagedPresenter.PagedV
     @Override
     public void setLoading(boolean value) {
         storyRecyclerViewAdapter.setLoading(value);
+    }
+
+    @Override
+    public void refreshFeed() {
+        // do nothing
+    }
+
+    @Override
+    public void refreshStory() {
+        presenter.loadMoreItems();
     }
 
     /**

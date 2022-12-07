@@ -172,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     @Override
     public void toggleIsFollowerButton(boolean isFollower) {
         // If logged in user if a follower of the selected user, display the follow button as "following"
+        this.updateSelectedUserFollowingAndFollowers();
         if (isFollower) {
             followButton.setText(R.string.following);
             followButton.setBackgroundColor(getResources().getColor(R.color.white));
@@ -237,5 +238,17 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
 
         // Get count of most recently selected user's followees (who they are following)
         presenter.getFollowingCount(selectedUser);
+    }
+
+    @Override
+    public void refreshFeedAndStory() {
+        try {
+            // should successfully cast only for feed and story fragment
+            FragmentInterface fragmentInterfaceInstance = (FragmentInterface) FragmentInterfaceInstance.getInstance().fragmentInterfaceInstance;
+            fragmentInterfaceInstance.refreshFeed();
+            fragmentInterfaceInstance.refreshStory();
+        } catch (Exception e) {
+            System.out.println("Doing nothing for failed cast");
+        }
     }
 }

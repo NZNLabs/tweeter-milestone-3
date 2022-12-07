@@ -22,7 +22,7 @@ done
 
 #!/bin/bash
 arr=(
-        "getFollowers"
+        "getFeed"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do

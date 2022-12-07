@@ -1,12 +1,20 @@
 package edu.byu.cs.tweeter.server.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.byu.cs.tweeter.model.domain.Status;
+import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
 import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.request.StatusRequest;
 import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.StatusResponse;
+import edu.byu.cs.tweeter.server.model.DBFeed;
+import edu.byu.cs.tweeter.server.model.DBFollow;
+import edu.byu.cs.tweeter.server.model.response.DBFollowResponse;
 import edu.byu.cs.tweeter.server.util.AuthManagement;
+import edu.byu.cs.tweeter.server.util.JsonSerializer;
 
 /**
  * Contains the business logic
@@ -77,6 +85,28 @@ public class StatusService extends AbstractService {
             boolean isValid = AuthManagement.validateAuthToken(request.getAuthToken(), getAuthDAO());
             if (!isValid) { return new IsFollowerResponse("expired"); }
 
+            // getting followers
+            System.out.println("getting followers");
+            List<DBFollow> followers = new ArrayList<>();
+            boolean hasMorePages = true;
+            while(hasMorePages) {
+                String lastFollowerAlias = null;
+                if (followers.size() > 0) {lastFollowerAlias = followers.get(followers.size() - 1).follower_handle;}
+
+                FollowersRequest followersRequest = new FollowersRequest(request.getAuthToken(), request.getStatus().user.getAlias(), 100, lastFollowerAlias);
+                DBFollowResponse response = getFollowDAO().getFollowers(followersRequest);
+                hasMorePages = response.isHasMorePages();
+                followers.addAll(response.getFollows());
+            }
+            System.out.println("followers list size: " + followers.size());
+
+            // adding status to feed of each follower
+            for (DBFollow follower : followers) {
+                DBFeed feedItem = new DBFeed(follower.follower_handle, status.getDate(), JsonSerializer.serialize(status));
+                getFeedDAO().postFeed(feedItem);
+            }
+            System.out.println("posted feed items successfully");
+
             boolean success = getStatusDAO().postStatus(status);
             if (success) {
                 return new Response(true);
@@ -84,6 +114,9 @@ public class StatusService extends AbstractService {
                 System.out.println("POST FAILURE");
                 return new Response(false, "post failure");
             }
+
+
+
         } catch (Exception e) {
             String error = "Exception: postStatus " + e.getClass();
             e.printStackTrace();

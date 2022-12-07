@@ -37,6 +37,7 @@ import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.presenter.FeedPresenter;
 import edu.byu.cs.tweeter.client.presenter.PagedPresenter;
 import edu.byu.cs.tweeter.client.view.BaseFragment;
+import edu.byu.cs.tweeter.client.view.main.FragmentInterface;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
@@ -46,7 +47,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * Implements the "Feed" tab.
  */
-public class FeedFragment extends BaseFragment implements PagedPresenter.PagedView<Status> {
+public class FeedFragment extends BaseFragment implements PagedPresenter.PagedView<Status>, FragmentInterface {
     private static final String USER_KEY = "UserKey";
 
     private static final int LOADING_DATA_VIEW = 0;
@@ -125,6 +126,16 @@ public class FeedFragment extends BaseFragment implements PagedPresenter.PagedVi
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
+    }
+
+    @Override
+    public void refreshFeed() {
+        presenter.loadMoreItems();
+    }
+
+    @Override
+    public void refreshStory() {
+        // do nothing
     }
 
     /**

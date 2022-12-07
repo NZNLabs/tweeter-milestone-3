@@ -19,7 +19,7 @@ public class DBFeed {
 
     public DBFeed() {}
 
-    public DBFeed(String ownerAlias, String authorAlias, String dateTime, String status) {
+    public DBFeed(String ownerAlias, String dateTime, String status) {
         this.ownerAlias = ownerAlias;
         // this.authorAlias = authorAlias;
         this.dateTime = dateTime;

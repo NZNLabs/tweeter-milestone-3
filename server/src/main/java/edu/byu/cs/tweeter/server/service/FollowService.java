@@ -157,10 +157,11 @@ public class FollowService extends AbstractService {
     }
 
     public CountResponse getFollowerCount(CountRequest request) {
+        if(request.getUserAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include user alias");}
+
         boolean isValid = AuthManagement.validateAuthToken(request.getAuthToken(), getAuthDAO());
         if (!isValid) {return new CountResponse("expired");}
 
-        if(request.getUserAlias() == null) {throw new RuntimeException("[Bad Request] Request needs to include user alias");}
         return getFollowDAO().getFollowerCount(request.getUserAlias());
     }
 

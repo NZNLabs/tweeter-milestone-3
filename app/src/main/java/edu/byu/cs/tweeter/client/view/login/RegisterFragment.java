@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
 import edu.byu.cs.tweeter.R;
 import edu.byu.cs.tweeter.client.presenter.RegisterPresenter;
 import edu.byu.cs.tweeter.client.view.BaseFragment;
@@ -115,6 +117,7 @@ public class RegisterFragment extends LoginBaseFragment implements RegisterPrese
         Context context = getContext();
         if (context == null) { return; }
         Intent intent = new Intent(context, MainActivity.class);
+        Picasso.get().invalidate(user.getImageUrl());
         intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
         startActivity(intent);
     }

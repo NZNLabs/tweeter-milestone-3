@@ -67,6 +67,7 @@ public class FollowDAO extends AbstractDAO implements IFollowDAO {
 
     @Override
     public CountResponse getFollowerCount(String userAlias) {
+        System.out.println("getFollowerCount start");
 
         DynamoDbIndex<DBFollow> ddbTableIndex = ddbTable.index(DBFollow.SECONDARY_INDEX_FOLLOWEE);
         AttributeValue attVal = AttributeValue.builder()
@@ -89,6 +90,8 @@ public class FollowDAO extends AbstractDAO implements IFollowDAO {
             count.addAndGet(page.items().size());
         });
 
+        System.out.println("FOLLOWER COUNT");
+        System.out.println(count.intValue());
         return new CountResponse(count.intValue());
     }
 

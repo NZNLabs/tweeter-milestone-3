@@ -7,6 +7,7 @@ import java.util.Base64;
 import java.util.Random;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
@@ -14,12 +15,16 @@ import edu.byu.cs.tweeter.model.net.request.UserRequest;
 import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 import edu.byu.cs.tweeter.model.net.response.Response;
 import edu.byu.cs.tweeter.model.net.response.UserResponse;
+import edu.byu.cs.tweeter.server.dao.IFeedDAO;
 import edu.byu.cs.tweeter.server.dao.IFollowDAO;
+import edu.byu.cs.tweeter.server.dao.IStatusDAO;
 import edu.byu.cs.tweeter.server.dao.IUserDAO;
 import edu.byu.cs.tweeter.server.model.DBAuthToken;
+import edu.byu.cs.tweeter.server.model.DBFeed;
 import edu.byu.cs.tweeter.server.model.DBFollow;
 import edu.byu.cs.tweeter.server.util.AuthManagement;
 import edu.byu.cs.tweeter.server.util.Constants;
+import edu.byu.cs.tweeter.server.util.JsonSerializer;
 import edu.byu.cs.tweeter.server.util.PBKDF2WithHmacSHA1Hashing;
 import edu.byu.cs.tweeter.util.FakeData;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -129,7 +134,7 @@ public class UserService extends AbstractService {
 
         User user = new User(request.getFirstName(), request.getLastName(), request.getUsername(), resourceURL);
         boolean postUserSuccess = getUserDAO().postUser(user);
-        populateDBWithUsers(user, getUserDAO(), daoFactory.getFollowDAO());
+        populateDBWithUsers(user, getUserDAO(), getFollowDAO(), getFeedDAO(), getStatusDAO());
 
         if (postUserSuccess) {
             return new LoginResponse(user, new AuthToken(authToken.authToken, authToken.dateTime));
@@ -138,7 +143,7 @@ public class UserService extends AbstractService {
         }
     }
 
-    private void populateDBWithUsers(User newUser, IUserDAO userDAO, IFollowDAO followDAO) {
+    private void populateDBWithUsers(User newUser, IUserDAO userDAO, IFollowDAO followDAO, IFeedDAO feedDAO, IStatusDAO statusDAO) {
         try {
             System.out.println("populateDBWithUsers: populating users");
             ArrayList<User> users = new ArrayList<>(FakeData.getInstance().getFakeUsers());
@@ -172,7 +177,11 @@ public class UserService extends AbstractService {
                 // create the follow list
                 for (Integer idx : randomIndices) {
                     User follower = users.get(idx);
-                    randomFollows.add(new DBFollow(follower.getAlias(), follower.getName(), user.getAlias(), user.getName()));
+                    if (follower.getAlias() == user.getAlias()) {
+                        System.out.println("CANT FOLLOW YOURSELF: " + user.getAlias());
+                    } else {
+                        randomFollows.add(new DBFollow(follower.getAlias(), follower.getName(), user.getAlias(), user.getName()));
+                    }
                 }
             }
 
@@ -180,6 +189,42 @@ public class UserService extends AbstractService {
             // post the follow list to db
             for (DBFollow follow : randomFollows) {
                 followDAO.postFollow(follow);
+            }
+
+            // create and post random statuses
+            ArrayList<Status> statuses = new ArrayList<>(FakeData.getInstance().generateFakeStatuses(users));
+            System.out.println("populateDBWithUsers: posting statuses: size: " + statuses.size());
+            for (Status status : statuses) {
+                statusDAO.postStatus(status);
+            }
+
+            // create random feed lists
+            // starting with just one user
+            System.out.println("populateDBWithUsers: create random feed list");
+            ArrayList<DBFeed> userFeed = new ArrayList<>();
+            for (User user : users) {
+                for (DBFollow follow : randomFollows) {
+
+                    // checking if our feed owner user is following someone
+                    if (follow.follower_handle == newUser.getAlias()) {
+
+                        // feed owner user is following user_X, so look through statuses for posts by user_X
+                        for (Status followee_status : statuses) {
+
+                            if (followee_status.user.getAlias() == follow.followee_handle) {
+
+                                // found post by user_X, who is being followed by our feed owner user -> adding new item to feed
+                                userFeed.add(new DBFeed(user.getAlias(), followee_status.datetime, JsonSerializer.serialize(followee_status)));
+                            }
+                        }
+                    }
+                }
+            }
+
+            // posting for user
+            System.out.println("populateDBWithUsers: posting feed items: size: " + userFeed.size());
+            for (DBFeed feedItem : userFeed) {
+                feedDAO.postFeed(feedItem);
             }
 
             System.out.println("populateDBWithUsers: success");

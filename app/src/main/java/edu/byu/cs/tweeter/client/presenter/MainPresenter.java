@@ -39,6 +39,7 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         void clearLogoutToast();
         void enableFollowButton(boolean isEnabled);
         void updateSelectedUserFollowingAndFollowers();
+        void refreshFeedAndStory();
         void logoutUser();
     }
 
@@ -242,6 +243,7 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         public void onResponseReceived() {}
         @Override
         public void handleSuccess(Bundle bundle) {
+            view.refreshFeedAndStory();
             view.clearPostToast();
             view.displaySuccessMessage("Successfully Posted!");
         }

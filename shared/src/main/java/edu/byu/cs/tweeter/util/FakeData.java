@@ -135,6 +135,36 @@ public class FakeData {
         }
     }
 
+    public List<Status> generateFakeStatuses(List<User> users) {
+        List<Status> newStatuses = new ArrayList<>();
+
+        Calendar calendar = new GregorianCalendar();
+        List<User> fakeUsers;
+        if (users.size() > 0) {
+            fakeUsers = users;
+        } else {
+            fakeUsers = getFakeUsers();
+        }
+
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < fakeUsers.size(); ++j) {
+                User sender = fakeUsers.get(j);
+                User mention = ((j < fakeUsers.size() - 1) ? fakeUsers.get(j + 1) : fakeUsers.get(0));
+                List<String> mentions = Collections.singletonList(mention.getAlias());
+                String url = "https://byu.edu";
+                List<String> urls = Collections.singletonList(url);
+                String post = "Post " + i + " " + j +
+                        "\nMy friend " + mention.getAlias() + " likes this website" +
+                        "\n" + url;
+                calendar.add(Calendar.MINUTE, 1);
+                String datetime = calendar.getTime().toString();
+                Status status = new Status(post, sender, datetime, urls, mentions);
+                newStatuses.add(status);
+            }
+        }
+        return newStatuses;
+    }
+
     public User getFirstUser() {
         List<User> fakeUsers = getFakeUsers();
         if (fakeUsers.size() > 0) {
