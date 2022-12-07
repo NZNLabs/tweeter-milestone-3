@@ -45,8 +45,6 @@ public class StatusDAO extends AbstractDAO implements IStatusDAO {
                     .partitionValue(request.getUserAlias())
                     .build());
 
-            System.out.println("getFollowees 2");
-
             Map<String, AttributeValue> lastEvaluatedKey = null;
             if (request.getLastStatus() != null) {
                 lastEvaluatedKey = new java.util.HashMap<>(Collections.emptyMap());
@@ -54,7 +52,6 @@ public class StatusDAO extends AbstractDAO implements IStatusDAO {
                 lastEvaluatedKey.put("dateTime", AttributeValue.builder().s(request.getLastStatus().datetime).build());
             }
 
-            System.out.println("getFollowees 3");
             QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                     .queryConditional(queryConditional)
                     .scanIndexForward(false)
@@ -62,18 +59,14 @@ public class StatusDAO extends AbstractDAO implements IStatusDAO {
                     .exclusiveStartKey(lastEvaluatedKey)
                     .build();
 
-
-            System.out.println("getFollowees 4");
             // Get items in the table.
             Optional<Page<DBStatus>> result = ddbTable.query(queryRequest).stream().findFirst();
 
-            System.out.println("getFollowees 5");
             // Display the results.
             if (result.isPresent()) {
                 Page<DBStatus> page = result.get();
                 List<DBStatus> dbStatuses = page.items();
 
-                System.out.println("STARTING DESERIALIZATION: SIZE: " + dbStatuses.size() );
                 // deserialize status from db
                 List<Status> statuses = new ArrayList<>();
                 for (DBStatus dbStatus : dbStatuses) {

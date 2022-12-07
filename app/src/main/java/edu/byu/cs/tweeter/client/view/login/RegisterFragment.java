@@ -17,8 +17,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.fragment.app.Fragment;
-
 import edu.byu.cs.tweeter.R;
 import edu.byu.cs.tweeter.client.presenter.RegisterPresenter;
 import edu.byu.cs.tweeter.client.view.BaseFragment;
@@ -28,7 +26,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * Implements the register screen.
  */
-public class RegisterFragment extends BaseFragment implements RegisterPresenter.View {
+public class RegisterFragment extends LoginBaseFragment implements RegisterPresenter.View {
     private static final String LOG_TAG = "RegisterFragment";
     private static final int RESULT_IMAGE = 10;
 
@@ -124,6 +122,11 @@ public class RegisterFragment extends BaseFragment implements RegisterPresenter.
     @Override
     public void displayErrorMessage(String message) {
         showToastSafely(message);
+    }
+
+    @Override
+    public void logoutUser() {
+        assert(false);
     }
 
     @Override

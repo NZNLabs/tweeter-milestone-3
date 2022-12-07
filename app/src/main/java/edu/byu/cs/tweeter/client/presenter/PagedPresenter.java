@@ -59,11 +59,16 @@ public abstract class PagedPresenter<T> extends BasePresenter<PagedPresenter.Pag
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to get user's profile:" + message);
+            super.handleFailure(message);
         }
 
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to get user's profile because of exception: " + exception.getMessage());
+        }
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 
@@ -91,6 +96,7 @@ public abstract class PagedPresenter<T> extends BasePresenter<PagedPresenter.Pag
             Log.e(LOG_TAG, errorMessage);
 
             view.displayErrorMessage(errorMessage);
+            super.handleFailure(message);
         }
 
         @Override
@@ -99,6 +105,11 @@ public abstract class PagedPresenter<T> extends BasePresenter<PagedPresenter.Pag
             Log.e(LOG_TAG, errorMessage, exception);
 
             view.displayErrorMessage(errorMessage);
+        }
+
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 

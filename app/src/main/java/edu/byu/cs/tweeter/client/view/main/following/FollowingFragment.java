@@ -105,6 +105,11 @@ public class FollowingFragment extends BaseFragment implements PagedPresenter.Pa
     }
 
     @Override
+    public void logoutUser() {
+        mainInterface.logout();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_following, container, false);

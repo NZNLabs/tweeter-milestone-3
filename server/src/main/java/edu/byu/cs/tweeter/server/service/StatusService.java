@@ -14,46 +14,27 @@ import edu.byu.cs.tweeter.server.util.AuthManagement;
 public class StatusService extends AbstractService {
 
     public StatusResponse getFeed(StatusRequest request) {
-//        try {
-//            if(request.getUserAlias() == null) {
-//                throw new RuntimeException("[Bad Request] Request needs to have a user alias");
-//            } else if(request.getLimit() <= 0) {
-//                throw new RuntimeException("[Bad Request] Request needs to have a positive limit");
-//            }
-//
-//            boolean isValid = AuthManagement.validateAuthToken(request.getAuthToken(), getAuthDAO());
-//            if (!isValid) { return new FollowingResponse("expired"); }
-//
-//            DBFollowResponse response = getFeedDAO().getFeed(request);
-//            if (!response.isSuccess()) {
-//                return new FollowingResponse("Failed to get followees");
-//            }
-//
-//            ArrayList<User> users = new ArrayList<>();
-//            for (DBFollow follow : response.getFollows()) {
-//                User followee = getUserDAO().getUser(follow.followee_handle).getUser();
-//                if (followee != null) {
-//                    users.add(followee);
-//                }
-//            }
-//
-//            return new FollowingResponse(users, response.isHasMorePages());
-//        } catch (Exception e) {
-//            String error = "Exception: Failed to get followees " + e.getClass();
-//            System.out.println(error);
-//            return new FollowingResponse(error);
-//        }
-//
-//
+        try {
+            if(request.getUserAlias() == null) {
+                throw new RuntimeException("[Bad Request] Request needs to have a user alias");
+            } else if(request.getLimit() <= 0) {
+                throw new RuntimeException("[Bad Request] Request needs to have a positive limit");
+            }
 
+            boolean isValid = AuthManagement.validateAuthToken(request.getAuthToken(), getAuthDAO());
+            if (!isValid) { return new StatusResponse("expired"); }
 
+            StatusResponse response = getFeedDAO().getFeed(request);
+            if (!response.isSuccess()) {
+                return new StatusResponse("Failed to get feed");
+            }
 
-
-        return new StatusResponse("NOT DONE");
-
-
-
-
+            return new StatusResponse(response.getStatuses(), response.getHasMorePages());
+        } catch (Exception e) {
+            String error = "Exception: Failed to get followees " + e.getClass();
+            System.out.println(error);
+            return new StatusResponse(error);
+        }
     }
 
     public StatusResponse getStory(StatusRequest request) {

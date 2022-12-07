@@ -102,11 +102,17 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to logout: " + message);
+            super.handleFailure(message);
         }
 
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to logout because of exception: " + exception.getMessage());
+        }
+
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 
@@ -121,10 +127,16 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to get follower count: " + message);
+            super.handleFailure(message);
         }
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to get follower count because of exception: " + exception.getMessage());
+        }
+
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 
@@ -139,10 +151,16 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to get following count: " + message);
+            super.handleFailure(message);
         }
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to get following count because of exception: " + exception.getMessage());
+        }
+
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 
@@ -157,10 +175,15 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to determine following relationship: " + message);
+            super.handleFailure(message);
         }
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to determine following relationship because of exception: " + exception.getMessage());
+        }
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 
@@ -177,10 +200,15 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to follow: " + message);
+            super.handleFailure(message);
         }
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to follow because of exception: " + exception.getMessage());
+        }
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 
@@ -197,10 +225,15 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to unfollow: " + message);
+            super.handleFailure(message);
         }
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to unfollow because of exception: " + exception.getMessage());
+        }
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 
@@ -215,10 +248,15 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> {
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to post status: " + message);
+            super.handleFailure(message);
         }
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to post status because of exception: " + exception.getMessage());
+        }
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 

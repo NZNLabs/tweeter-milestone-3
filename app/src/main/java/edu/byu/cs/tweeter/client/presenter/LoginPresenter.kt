@@ -41,7 +41,7 @@ class LoginPresenter(view: View): BasePresenter<LoginPresenter.View>(view) {
         return null
     }
 
-    private val loginObserver: TaskObserverInterface = object : TaskObserverInterface {
+    private val loginObserver: TaskObserverInterface = object : TaskObserverInterface() {
         override fun onResponseReceived() {}
         override fun handleSuccess(bundle: Bundle) {
             val loggedInUser = bundle.getSerializable(LoginTask.USER_KEY) as User
@@ -60,10 +60,14 @@ class LoginPresenter(view: View): BasePresenter<LoginPresenter.View>(view) {
 
         override fun handleFailure(message: String) {
             view.displayInfoMessage("Failed to login: $message")
+            super.handleFailure(message)
         }
 
         override fun handleException(exception: java.lang.Exception) {
             view.displayInfoMessage("Failed to login because of exception: " + exception.message)
+        }
+        override fun logout() {
+            view.logoutUser()
         }
     }
 }

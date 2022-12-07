@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.view.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -29,7 +30,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * The main activity for the application. Contains tabs for feed, story, following, and followers.
  */
-public class MainActivity extends AppCompatActivity implements MainPresenter.View, StatusDialogFragment.Observer {
+public class MainActivity extends AppCompatActivity implements MainPresenter.View, StatusDialogFragment.Observer, MainInterface{
 
     public static final String CURRENT_USER_KEY = "CurrentUser";
 
@@ -41,6 +42,23 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
     private Button followButton;
 
     private MainPresenter presenter;
+
+    private SectionsPagerAdapter sectionsPagerAdapter;
+
+    @Override
+    public void logout() {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                sectionsPagerAdapter.notifyDataSetChanged();
+                Toast.makeText(MainActivity.this, "Logging out, but crashing :(", Toast.LENGTH_LONG).show();
+                logoutUser();
+            }
+        }, 2500);
+    } // called by fragments who received expired token
+
+    public interface ActivityInterface { void logoutUser();}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Vie
         AuthToken authToken = Cache.getInstance().getCurrUserAuthToken();
         presenter = new MainPresenter(this, authToken);
 
-        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), selectedUser);
+        this.sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), selectedUser);
         ViewPager viewPager = findViewById(R.id.view_pager);
         viewPager.setOffscreenPageLimit(1);
         viewPager.setAdapter(sectionsPagerAdapter);

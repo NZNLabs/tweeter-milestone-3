@@ -1,23 +1,10 @@
 package edu.byu.cs.tweeter.server.service;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.S3DataSource;
-
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Random;
-
-import javax.imageio.ImageIO;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -127,40 +114,11 @@ public class UserService extends AbstractService {
             String bucket_name = Constants.S3_BUCKET_ID;
             String key = "profile-pic/" + request.getUsername().replace("@","") + ".jpg";
 
-//            String base64Image = request.getImage().split(",")[1];
-//            byte[] imageBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(request.getImage());
             byte[] imageBytes = Base64.getDecoder().decode(request.getImage());
-//            BufferedImage img = ImageIO.read(new ByteArrayInputStream(imageBytes));
-
-
-
-
-
-//            Path path = Paths.get(request.getUsername().replace("@","") + ".jpg");
-//            Files.write(path, );
-//            File file = path.toFile();
-
-
 
             PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucket_name).key(key).build(); // acl("public-read")
             s3Client.putObject(objectRequest, RequestBody.fromBytes(imageBytes));
 
-
-
-
-//            // Convert image to byte array.
-//            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//            image.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-//            byte[] imageBytes = bos.toByteArray();
-//
-//            // Intentionally, Use the java Base64 encoder so it is compatible with M4.
-//            return Base64.getEncoder().encodeToString(imageBytes);
-//
-//            String base64Image = request.getImage().split(",")[1];
-//            byte[] imageAsBytes = Base64.decode(base64Image.getBytes(), Base64.DEFAULT);
-//            img.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
-
-//            s3Client.putObject(bucket_name, key, request.getImage());
             GetUrlRequest urlRequest = GetUrlRequest.builder().bucket(bucket_name).key(key).build();
             resourceURL = s3Client.utilities().getUrl(urlRequest).toExternalForm();
         } catch (Exception e) {

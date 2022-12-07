@@ -114,6 +114,11 @@ public class FeedFragment extends BaseFragment implements PagedPresenter.PagedVi
     }
 
     @Override
+    public void logoutUser() {
+        mainInterface.logout();
+    }
+
+    @Override
     public void navigateToUser(@NonNull User user) {
         Context context = getContext();
         if (context == null) { return; }

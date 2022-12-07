@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -93,11 +92,16 @@ public class RegisterPresenter extends BasePresenter<RegisterPresenter.View> {
         @Override
         public void handleFailure(String message) {
             view.displayErrorMessage("Failed to register: " + message);
+            super.handleFailure(message);
         }
 
         @Override
         public void handleException(Exception exception) {
             view.displayErrorMessage("Failed to register because of exception: " + exception.getMessage());
+        }
+        @Override
+        public void logout() {
+            view.logoutUser();
         }
     };
 

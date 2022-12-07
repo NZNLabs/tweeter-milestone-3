@@ -22,7 +22,7 @@ done
 
 #!/bin/bash
 arr=(
-        "register"
+        "getFollowers"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do

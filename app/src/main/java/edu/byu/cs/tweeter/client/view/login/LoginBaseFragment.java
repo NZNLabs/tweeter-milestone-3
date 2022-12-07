@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.client.view;
+package edu.byu.cs.tweeter.client.view.login;
 
 import android.content.Context;
 import android.util.Log;
@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment;
 
 import edu.byu.cs.tweeter.client.view.main.MainInterface;
 
-public class BaseFragment extends Fragment {
+public class LoginBaseFragment extends Fragment {
 
     public Toast makeToastSafely(String message) {
         Context context = getContext();
@@ -27,14 +27,6 @@ public class BaseFragment extends Fragment {
             return;
         }
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-    }
-
-    public MainInterface mainInterface;
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        this.mainInterface = (MainInterface)requireActivity();
     }
 
 }

@@ -22,7 +22,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * Implements the login screen.
  */
-public class LoginFragment extends BaseFragment implements LoginPresenter.View {
+public class LoginFragment extends LoginBaseFragment implements LoginPresenter.View {
     private static final String LOG_TAG = "LoginFragment";
 
     private LoginPresenter presenter;
@@ -65,6 +65,11 @@ public class LoginFragment extends BaseFragment implements LoginPresenter.View {
     @Override
     public void displayErrorMessage(@NonNull String message) {
         errorView.setText(message);
+    }
+
+    @Override
+    public void logoutUser() {
+        assert(false);
     }
 
     @Override

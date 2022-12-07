@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -93,6 +94,12 @@ public class FollowersFragment extends BaseFragment implements PagedPresenter.Pa
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mainInterface.logout();
+    }
+
+    @Override
     public void setLoading(boolean value) {
         followersRecyclerViewAdapter.setLoading(value);
     }
@@ -105,6 +112,11 @@ public class FollowersFragment extends BaseFragment implements PagedPresenter.Pa
     @Override
     public void displayErrorMessage(String message) {
         showToastSafely(message);
+    }
+
+    @Override
+    public void logoutUser() {
+        mainInterface.logout();
     }
 
     @Override

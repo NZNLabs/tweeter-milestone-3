@@ -3,6 +3,7 @@ package edu.byu.cs.tweeter.server.factories;
 
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.server.model.DBAuthToken;
+import edu.byu.cs.tweeter.server.model.DBFeed;
 import edu.byu.cs.tweeter.server.model.DBFollow;
 import edu.byu.cs.tweeter.server.model.DBStatus;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -17,6 +18,7 @@ public class DatabaseFactoryImplementation implements DatabaseFactory {
     private static DynamoDbTable<DBFollow> followTable = null;
     private static DynamoDbTable<DBAuthToken> authTable = null;
     private static DynamoDbTable<DBStatus> statusTable = null;
+    private static DynamoDbTable<DBFeed> feedTable = null;
 
     @Override
     public DynamoDbTable<User> getUserTable() {
@@ -40,6 +42,12 @@ public class DatabaseFactoryImplementation implements DatabaseFactory {
     public DynamoDbTable<DBStatus> getStatusTable() {
         if (statusTable == null) {statusTable = ddbEnhancedClient.table("status", TableSchema.fromBean(DBStatus.class));}
         return statusTable;
+    }
+
+    @Override
+    public DynamoDbTable<DBFeed> getFeedTable() {
+        if (feedTable == null) {feedTable = ddbEnhancedClient.table("feed", TableSchema.fromBean(DBFeed.class));}
+        return feedTable;
     }
 
 
