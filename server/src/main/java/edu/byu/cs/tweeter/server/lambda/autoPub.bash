@@ -14,6 +14,7 @@ arr=(
         "logout"
         "register"
         "getUser"
+        "PostStatusQueue"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do

@@ -1,8 +1,14 @@
 package edu.byu.cs.tweeter.server.service;
 
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.amazonaws.services.sqs.model.SendMessageResult;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
 import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
@@ -14,6 +20,7 @@ import edu.byu.cs.tweeter.server.model.DBFeed;
 import edu.byu.cs.tweeter.server.model.DBFollow;
 import edu.byu.cs.tweeter.server.model.response.DBFollowResponse;
 import edu.byu.cs.tweeter.server.util.AuthManagement;
+import edu.byu.cs.tweeter.server.util.Constants;
 import edu.byu.cs.tweeter.server.util.JsonSerializer;
 
 /**
@@ -85,31 +92,19 @@ public class StatusService extends AbstractService {
             boolean isValid = AuthManagement.validateAuthToken(request.getAuthToken(), getAuthDAO());
             if (!isValid) { return new IsFollowerResponse("expired"); }
 
-            // getting followers
-            System.out.println("getting followers: time: " + System.currentTimeMillis());
-            List<DBFollow> followers = new ArrayList<>();
-            boolean hasMorePages = true;
-            while(hasMorePages) {
-                String lastFollowerAlias = null;
-                if (followers.size() > 0) {lastFollowerAlias = followers.get(followers.size() - 1).follower_handle;}
+            // pushing status to queue to update feed
+            SendMessageRequest send_msg_request = new SendMessageRequest()
+                    .withQueueUrl(Constants.SQS_POST_STATUS_URL)
+                    .withMessageBody(JsonSerializer.serialize(request.getStatus()));
 
-                FollowersRequest followersRequest = new FollowersRequest(request.getAuthToken(), request.getStatus().user.getAlias(), 100, lastFollowerAlias);
-                DBFollowResponse response = getFollowDAO().getFollowers(followersRequest);
-                hasMorePages = response.isHasMorePages();
-                followers.addAll(response.getFollows());
-            }
-            System.out.println("followers list size: " + followers.size() + " & time: " + System.currentTimeMillis());
+            AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
+            SendMessageResult send_msg_result = sqs.sendMessage(send_msg_request);
 
-            // adding status to feed of each follower
-            List<DBFeed> feedList = new ArrayList<>();
-            for (DBFollow follower : followers) {
-                feedList.add(new DBFeed(follower.follower_handle, status.getDate(), JsonSerializer.serialize(status)));
-            }
+            String msgId = send_msg_result.getMessageId();
+            System.out.println("POST PUSH TO QUEUE: Message ID: " + msgId);
 
-            System.out.println("starting post feed batch: size: " + feedList.size());
-            getFeedDAO().postFeedBatch(feedList);
-            System.out.println("posted feed items successfully");
-
+            // posting status
+            System.out.println("POSTING STATUS");
             boolean success = getStatusDAO().postStatus(status);
             if (success) {
                 return new Response(true);
@@ -117,8 +112,6 @@ public class StatusService extends AbstractService {
                 System.out.println("POST FAILURE");
                 return new Response(false, "post failure");
             }
-
-
 
         } catch (Exception e) {
             System.out.println("POST FAILURE");
@@ -128,11 +121,11 @@ public class StatusService extends AbstractService {
         }
     }
 
-    public Response postStatusToFeeds(PostStatusRequest request) {
+    public Response postStatusToFeeds(String jsonStatus) {
 
         try {
-            if(request.getStatus() == null) {throw new RuntimeException("[Bad Request] Request needs to have a status");}
-            Status status = request.getStatus();
+            if(jsonStatus == null) {throw new RuntimeException("[Bad Request] Request needs to have a status");}
+            Status status = JsonSerializer.deserialize(jsonStatus, Status.class);
             if (status.datetime == null) { throw new RuntimeException(); }
             if (status.post == null) { throw new RuntimeException(); }
             if (status.mentions == null) { throw new RuntimeException(); }
@@ -147,7 +140,7 @@ public class StatusService extends AbstractService {
                 String lastFollowerAlias = null;
                 if (followers.size() > 0) {lastFollowerAlias = followers.get(followers.size() - 1).follower_handle;}
 
-                FollowersRequest followersRequest = new FollowersRequest(request.getAuthToken(), request.getStatus().user.getAlias(), 100, lastFollowerAlias);
+                FollowersRequest followersRequest = new FollowersRequest(new AuthToken(), status.user.getAlias(), 100, lastFollowerAlias);
                 DBFollowResponse response = getFollowDAO().getFollowers(followersRequest);
                 hasMorePages = response.isHasMorePages();
                 followers.addAll(response.getFollows());
@@ -170,8 +163,7 @@ public class StatusService extends AbstractService {
             System.out.println("POST FAILURE");
             String error = "Exception: postStatus " + e.getClass();
             e.printStackTrace();
-            return new IsFollowerResponse(error);
+            return new Response(false, error);
         }
     }
-
 }
