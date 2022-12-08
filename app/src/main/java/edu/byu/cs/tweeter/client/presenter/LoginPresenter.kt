@@ -35,7 +35,7 @@ class LoginPresenter(view: View): BasePresenter<LoginPresenter.View>(view) {
     }
 
     fun validateLogin(alias: String, password: String): String? {
-        if (alias.first() != '@') { return "Alias must begin with @." }
+//        if (alias.first() != '@') { return "Alias must begin with @." }
         if (alias.length < 2) { return "Alias must contain 1 or more characters after the @." }
         if (password.isEmpty()) { return "Password cannot be empty." }
         return null

@@ -116,9 +116,9 @@ public class RegisterPresenter extends BasePresenter<RegisterPresenter.View> {
         if (alias.length() == 0) {
             throw new IllegalArgumentException("Alias cannot be empty.");
         }
-        if (alias.charAt(0) != '@') {
-            throw new IllegalArgumentException("Alias must begin with @.");
-        }
+//        if (alias.charAt(0) != '@') {
+//            throw new IllegalArgumentException("Alias must begin with @.");
+//        }
         if (alias.length() < 2) {
             throw new IllegalArgumentException("Alias must contain 1 or more characters after the @.");
         }

@@ -98,10 +98,10 @@ public class UserService extends AbstractService {
         if(request == null){
             throw new RuntimeException("[Bad Request] Missing auth token");
         }
-        // todo comeback remove
-        System.out.println("STARG CLEARING STATUS");
-        getStatusDAO().clearStatusDB();
-        System.out.println("FINISH CLEARING STATUS");
+//        // todo comeback remove
+//        System.out.println("STARG CLEARING STATUS");
+//        getStatusDAO().clearStatusDB();
+//        System.out.println("FINISH CLEARING STATUS");
         return new Response(true);
     }
 

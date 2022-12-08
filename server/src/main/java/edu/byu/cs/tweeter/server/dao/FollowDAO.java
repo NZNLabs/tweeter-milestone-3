@@ -186,7 +186,7 @@ public class FollowDAO extends AbstractDAO implements IFollowDAO {
             QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                     .queryConditional(queryConditional)
                     .scanIndexForward(true)
-                    .limit(10)
+                    .limit(request.getLimit())
                     .exclusiveStartKey(lastEvaluatedKey)
                     .build();
 
@@ -197,7 +197,7 @@ public class FollowDAO extends AbstractDAO implements IFollowDAO {
             if (result.isPresent()) {
                 Page<DBFollow> page = result.get();
                 List<DBFollow> followers = page.items();
-                System.out.println("getFollowers size: " + followers.size());
+//                System.out.println("getFollowers size: " + followers.size());
                 return new DBFollowResponse(followers, page.lastEvaluatedKey() != null);
             } else {
                 System.out.println("getFollowers No results returned");
@@ -215,12 +215,7 @@ public class FollowDAO extends AbstractDAO implements IFollowDAO {
         try {
             System.out.println("START postFollowBatch() follows size: " + follows.size());
             List<DBFollow> batchToWrite = new ArrayList<>();
-            int idx = 0;
             for (String followerAlias : follows) {
-                if (idx <= 2200 || idx > 2550) {
-                    idx++;
-                    continue;
-                }
                 DBFollow newFollow = new DBFollow(followerAlias, "er", followTarget, "ee");
                 batchToWrite.add(newFollow);
 

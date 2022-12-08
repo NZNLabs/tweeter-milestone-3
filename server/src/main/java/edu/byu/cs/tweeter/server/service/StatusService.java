@@ -86,7 +86,7 @@ public class StatusService extends AbstractService {
             if (!isValid) { return new IsFollowerResponse("expired"); }
 
             // getting followers
-            System.out.println("getting followers");
+            System.out.println("getting followers: time: " + System.currentTimeMillis());
             List<DBFollow> followers = new ArrayList<>();
             boolean hasMorePages = true;
             while(hasMorePages) {
@@ -98,13 +98,16 @@ public class StatusService extends AbstractService {
                 hasMorePages = response.isHasMorePages();
                 followers.addAll(response.getFollows());
             }
-            System.out.println("followers list size: " + followers.size());
+            System.out.println("followers list size: " + followers.size() + " & time: " + System.currentTimeMillis());
 
             // adding status to feed of each follower
+            List<DBFeed> feedList = new ArrayList<>();
             for (DBFollow follower : followers) {
-                DBFeed feedItem = new DBFeed(follower.follower_handle, status.getDate(), JsonSerializer.serialize(status));
-                getFeedDAO().postFeed(feedItem);
+                feedList.add(new DBFeed(follower.follower_handle, status.getDate(), JsonSerializer.serialize(status)));
             }
+
+            System.out.println("starting post feed batch: size: " + feedList.size());
+            getFeedDAO().postFeedBatch(feedList);
             System.out.println("posted feed items successfully");
 
             boolean success = getStatusDAO().postStatus(status);
@@ -118,6 +121,7 @@ public class StatusService extends AbstractService {
 
 
         } catch (Exception e) {
+            System.out.println("POST FAILURE");
             String error = "Exception: postStatus " + e.getClass();
             e.printStackTrace();
             return new IsFollowerResponse(error);

@@ -10,6 +10,6 @@ import edu.byu.cs.tweeter.server.model.DBFeed;
 public interface IFeedDAO {
     boolean postFeed(DBFeed request);
     StatusResponse getFeed(StatusRequest request);
-    void postFeedBatch(List<DBFeed> users);
+    void postFeedBatch(List<DBFeed> feedList);
     void clearFeedDB();
 }

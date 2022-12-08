@@ -22,7 +22,7 @@ done
 
 #!/bin/bash
 arr=(
-      "logout"
+      "postStatus"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do
