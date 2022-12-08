@@ -1,5 +1,7 @@
 package edu.byu.cs.tweeter.server.dao;
 
+import static edu.byu.cs.tweeter.server.factories.DatabaseFactoryImplementation.ddbEnhancedClient;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,10 +22,15 @@ import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteResult;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.WriteBatch;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 /**
  * A DAO for accessing 'following' data from the database.
@@ -33,7 +40,7 @@ public class FollowDAO extends AbstractDAO implements IFollowDAO {
     private final DynamoDbTable<DBFollow> ddbTable = this.dbFactory.getFollowTable();
 
     public FollowDAO(DatabaseFactory dbFactory) {
-        super(dbFactory);
+        super(dbFactory, ddbEnhancedClient);
     }
 
     /**
@@ -200,6 +207,78 @@ public class FollowDAO extends AbstractDAO implements IFollowDAO {
             System.out.println(e.getClass());
             e.printStackTrace();
             return new DBFollowResponse("getFollowers: Failed to get followers " + e.getClass());
+        }
+    }
+
+    @Override
+    public void postFollowBatch(List<String> follows, String followTarget){
+        try {
+            System.out.println("START postFollowBatch() follows size: " + follows.size());
+            List<DBFollow> batchToWrite = new ArrayList<>();
+            int idx = 0;
+            for (String followerAlias : follows) {
+                if (idx <= 2200 || idx > 2550) {
+                    idx++;
+                    continue;
+                }
+                DBFollow newFollow = new DBFollow(followerAlias, "er", followTarget, "ee");
+                batchToWrite.add(newFollow);
+
+                if (batchToWrite.size() == 25) {
+                    // package this batch up and send to DynamoDB.
+                    writeChunkOfFollowDTOs(batchToWrite);
+                    batchToWrite = new ArrayList<>();
+                }
+            }
+
+            // write any remaining
+            if (batchToWrite.size() > 0) {
+                // package this batch up and send to DynamoDB.
+                writeChunkOfFollowDTOs(batchToWrite);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void writeChunkOfFollowDTOs(List<DBFollow> follows) {
+        if(follows.size() > 25)
+            throw new RuntimeException("Too many follows to write: size: " + follows.size() );
+
+        WriteBatch.Builder<DBFollow> writeBuilder = WriteBatch.builder(DBFollow.class).mappedTableResource(ddbTable);
+        for (DBFollow item : follows) {
+            writeBuilder.addPutItem(builder -> builder.item(item));
+        }
+        BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest = BatchWriteItemEnhancedRequest.builder()
+                .writeBatches(writeBuilder.build()).build();
+
+        try {
+            BatchWriteResult result = enhancedClient.batchWriteItem(batchWriteItemEnhancedRequest);
+
+            // just hammer dynamodb again with anything that didn't get written this time
+            if (result.unprocessedPutItemsForTable(ddbTable).size() > 0) {
+                writeChunkOfFollowDTOs(result.unprocessedPutItemsForTable(ddbTable));
+            }
+
+        } catch (DynamoDbException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    @Override
+    public void clearFollowsDB() {
+        try {
+            System.out.println("STARING CLEAN OF FOLLOWS");
+            PageIterable<DBFollow> scan = ddbTable.scan();
+            Object[] items = scan.items().stream().toArray();
+            for (Object item : items) {
+                DBFollow follows = ((DBFollow)item);
+                ddbTable.deleteItem(follows);
+            }
+            System.out.println("FINISH CLEAN OF FOLLOWS");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

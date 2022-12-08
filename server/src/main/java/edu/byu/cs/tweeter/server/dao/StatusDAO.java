@@ -1,5 +1,7 @@
 package edu.byu.cs.tweeter.server.dao;
 
+import static edu.byu.cs.tweeter.server.factories.DatabaseFactoryImplementation.ddbEnhancedClient;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import edu.byu.cs.tweeter.model.domain.Status;
+import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.StatusRequest;
 import edu.byu.cs.tweeter.model.net.response.StatusResponse;
 import edu.byu.cs.tweeter.server.factories.DatabaseFactory;
@@ -14,6 +17,7 @@ import edu.byu.cs.tweeter.server.model.DBStatus;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -22,7 +26,7 @@ public class StatusDAO extends AbstractDAO implements IStatusDAO {
 
     private final DynamoDbTable<DBStatus> ddbTable = this.dbFactory.getStatusTable();
 
-    public StatusDAO(DatabaseFactory dbFactory) {super(dbFactory);}
+    public StatusDAO(DatabaseFactory dbFactory) {super(dbFactory, ddbEnhancedClient);}
 
     @Override
     public boolean postStatus(Status request) {
@@ -87,5 +91,21 @@ public class StatusDAO extends AbstractDAO implements IStatusDAO {
             return new StatusResponse(error);
         }
 
+    }
+
+    @Override
+    public void clearStatusDB() {
+        try {
+            System.out.println("STARING CLEAN OF STATUS");
+            PageIterable<DBStatus> scan = ddbTable.scan();
+            Object[] items = scan.items().stream().toArray();
+            for (Object item : items) {
+                DBStatus status = ((DBStatus)item);
+                ddbTable.deleteItem(status);
+            }
+            System.out.println("FINISH CLEAN OF STATUS");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

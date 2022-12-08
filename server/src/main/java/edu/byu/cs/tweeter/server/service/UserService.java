@@ -24,6 +24,7 @@ import edu.byu.cs.tweeter.server.model.DBFeed;
 import edu.byu.cs.tweeter.server.model.DBFollow;
 import edu.byu.cs.tweeter.server.util.AuthManagement;
 import edu.byu.cs.tweeter.server.util.Constants;
+import edu.byu.cs.tweeter.server.util.Filler;
 import edu.byu.cs.tweeter.server.util.JsonSerializer;
 import edu.byu.cs.tweeter.server.util.PBKDF2WithHmacSHA1Hashing;
 import edu.byu.cs.tweeter.util.FakeData;
@@ -36,6 +37,25 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class UserService extends AbstractService {
 
     public LoginResponse login(LoginRequest request) {
+
+//        try {
+//            System.out.println("STARTING FILLER");
+//
+
+//            getUserDAO().clearUsersDB();
+//            getFollowDAO().clearFollowsDB();
+//
+//
+//            Filler.fillDatabase(daoFactory);
+//            System.out.println("FINISH FILLER");
+//            return new LoginResponse("IT WORKED");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.out.println("FAILED FILLER");
+//            return new LoginResponse("WHOOOPS ");
+//        }
+
+
         if(request.getUsername() == null){
             throw new RuntimeException("[Bad Request] Missing a username");
         } else if(request.getPassword() == null) {
@@ -78,10 +98,15 @@ public class UserService extends AbstractService {
         if(request == null){
             throw new RuntimeException("[Bad Request] Missing auth token");
         }
+        // todo comeback remove
+        System.out.println("STARG CLEARING STATUS");
+        getStatusDAO().clearStatusDB();
+        System.out.println("FINISH CLEARING STATUS");
         return new Response(true);
     }
 
     public LoginResponse register(RegisterRequest request) {
+
         if(request.getUsername() == null){
             throw new RuntimeException("[Bad Request] Missing a username");
         } else if(request.getPassword() == null) {
@@ -134,7 +159,7 @@ public class UserService extends AbstractService {
 
         User user = new User(request.getFirstName(), request.getLastName(), request.getUsername(), resourceURL);
         boolean postUserSuccess = getUserDAO().postUser(user);
-        populateDBWithUsers(user, getUserDAO(), getFollowDAO(), getFeedDAO(), getStatusDAO());
+        // populateDBWithUsers(user, getUserDAO(), getFollowDAO(), getFeedDAO(), getStatusDAO());
 
         if (postUserSuccess) {
             return new LoginResponse(user, new AuthToken(authToken.authToken, authToken.dateTime));
@@ -233,7 +258,6 @@ public class UserService extends AbstractService {
             e.printStackTrace();
         }
     }
-
 
     private String createAuthToken() {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";

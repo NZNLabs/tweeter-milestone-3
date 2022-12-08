@@ -22,7 +22,7 @@ done
 
 #!/bin/bash
 arr=(
-        "getFeed"
+      "logout"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do

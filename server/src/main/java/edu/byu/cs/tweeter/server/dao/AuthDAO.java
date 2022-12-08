@@ -1,5 +1,7 @@
 package edu.byu.cs.tweeter.server.dao;
 
+import static edu.byu.cs.tweeter.server.factories.DatabaseFactoryImplementation.ddbEnhancedClient;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +27,7 @@ public class AuthDAO extends AbstractDAO implements IAuthDAO{
     private final DynamoDbTable<DBAuthToken> ddbTable = this.dbFactory.getAuthTable();
 
     public AuthDAO(DatabaseFactory dbFactory) {
-        super(dbFactory);
+        super(dbFactory, ddbEnhancedClient);
     }
 
     @Override

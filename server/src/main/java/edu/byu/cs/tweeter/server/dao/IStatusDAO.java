@@ -7,4 +7,5 @@ import edu.byu.cs.tweeter.model.net.response.StatusResponse;
 public interface IStatusDAO {
     boolean postStatus(Status request);
     StatusResponse getStory(StatusRequest request);
+    void clearStatusDB();
 }

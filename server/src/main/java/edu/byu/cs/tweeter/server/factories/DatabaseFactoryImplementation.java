@@ -12,7 +12,7 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 public class DatabaseFactoryImplementation implements DatabaseFactory {
 
-    private static final DynamoDbEnhancedClient ddbEnhancedClient = DynamoDbEnhancedClient.create();
+    public static final DynamoDbEnhancedClient ddbEnhancedClient = DynamoDbEnhancedClient.create();
 
     private static DynamoDbTable<User> usersTable = null;
     private static DynamoDbTable<DBFollow> followTable = null;

@@ -1,5 +1,7 @@
 package edu.byu.cs.tweeter.server.dao;
 
+import static edu.byu.cs.tweeter.server.factories.DatabaseFactoryImplementation.ddbEnhancedClient;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +17,7 @@ import edu.byu.cs.tweeter.server.model.DBStatus;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -27,7 +30,7 @@ public class FeedDAO extends AbstractDAO implements IFeedDAO {
     private final DynamoDbTable<DBFeed> ddbTable = this.dbFactory.getFeedTable();
 
     public FeedDAO(DatabaseFactory dbFactory) {
-        super(dbFactory);
+        super(dbFactory, ddbEnhancedClient);
     }
 
     @Override
@@ -99,5 +102,26 @@ public class FeedDAO extends AbstractDAO implements IFeedDAO {
             return new StatusResponse(error);
         }
 
+    }
+
+    @Override
+    public void postFeedBatch(List<DBFeed> users) {
+
+    }
+
+    @Override
+    public void clearFeedDB() {
+        try {
+            System.out.println("STARING CLEAN OF FEED");
+            PageIterable<DBFeed> scan = ddbTable.scan();
+            Object[] items = scan.items().stream().toArray();
+            for (Object item : items) {
+                DBFeed feed = ((DBFeed)item);
+                ddbTable.deleteItem(feed);
+            }
+            System.out.println("FINISH CLEAN OF FEED");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
