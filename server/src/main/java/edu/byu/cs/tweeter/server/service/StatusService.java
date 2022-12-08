@@ -128,4 +128,50 @@ public class StatusService extends AbstractService {
         }
     }
 
+    public Response postStatusToFeeds(PostStatusRequest request) {
+
+        try {
+            if(request.getStatus() == null) {throw new RuntimeException("[Bad Request] Request needs to have a status");}
+            Status status = request.getStatus();
+            if (status.datetime == null) { throw new RuntimeException(); }
+            if (status.post == null) { throw new RuntimeException(); }
+            if (status.mentions == null) { throw new RuntimeException(); }
+            if (status.urls == null) { throw new RuntimeException(); }
+            if (status.user == null) { throw new RuntimeException(); }
+
+            // getting followers
+            System.out.println("getting followers: time: " + System.currentTimeMillis());
+            List<DBFollow> followers = new ArrayList<>();
+            boolean hasMorePages = true;
+            while(hasMorePages) {
+                String lastFollowerAlias = null;
+                if (followers.size() > 0) {lastFollowerAlias = followers.get(followers.size() - 1).follower_handle;}
+
+                FollowersRequest followersRequest = new FollowersRequest(request.getAuthToken(), request.getStatus().user.getAlias(), 100, lastFollowerAlias);
+                DBFollowResponse response = getFollowDAO().getFollowers(followersRequest);
+                hasMorePages = response.isHasMorePages();
+                followers.addAll(response.getFollows());
+            }
+            System.out.println("followers list size: " + followers.size() + " & time: " + System.currentTimeMillis());
+
+            // adding status to feed of each follower
+            List<DBFeed> feedList = new ArrayList<>();
+            for (DBFollow follower : followers) {
+                feedList.add(new DBFeed(follower.follower_handle, status.getDate(), JsonSerializer.serialize(status)));
+            }
+
+            System.out.println("starting post feed batch: size: " + feedList.size());
+            getFeedDAO().postFeedBatch(feedList);
+            System.out.println("posted feed items successfully");
+
+            return new Response(true);
+
+        } catch (Exception e) {
+            System.out.println("POST FAILURE");
+            String error = "Exception: postStatus " + e.getClass();
+            e.printStackTrace();
+            return new IsFollowerResponse(error);
+        }
+    }
+
 }

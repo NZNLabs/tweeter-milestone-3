@@ -33,6 +33,12 @@ dependencies {
     implementation 'software.amazon.awssdk:kinesis'
     implementation "javax.xml.bind:jaxb-api:2.3.1" // because of warning when uploading image to s3
 
+    // aws sqs
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.12.353'
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-events
+    implementation group: 'com.amazonaws', name: 'aws-lambda-java-events', version: '3.7.0'
+
     // aws logger ?
     implementation "org.slf4j:slf4j-nop:1.7.25"
 
